@@ -1,3 +1,6 @@
 *.mat
 *.h5
 *.nc
+*.png
+*.eps
+*.pdf
