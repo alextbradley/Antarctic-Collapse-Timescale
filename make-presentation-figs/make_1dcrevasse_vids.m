@@ -7,14 +7,14 @@ clear
 addpath('..')
 addpath('../functions')
 make_vid = 1;
-
+grounding_line_advection_profile = 1; %set to one to have the advected profile superimposed on the BL profile
 %% Parameters
 pp = struct;
 for i = 1:2
     pp(i).Tb    = -5 + 273.15;     %basal temperature (kelvin)
     pp(i).Ts    = -20 + 273.15;    %surface temp
     pp(i).B0    = 1.928;  %viscosity constant
-    pp(i).rhoi  = 918.0;  %ice density
+    pp(i).rhoi  = 918.0;  %ice den sity
     pp(i).g     = 9.81;   %gravitational acceleration
     pp(i).epsxx = 0.001;  %strain rate
     pp(i).kappa = 36;     %diffusivity
@@ -25,11 +25,18 @@ for i = 1:2
     if i == 1 %warm case
         pp(i).mdot = 5;
         pp(i).fname = "high_melt_rate.mp4"; %save file name
+        if grounding_line_advection_profile
+            pp(i).fname = "high_melt_rate_GroundingLineAdvection.mp4";
+        end
         pp(i).H0    = 400;    %initial ice thickness
         pp(i).dt = 0.2;
     else
         pp(i).mdot = 0.5;
         pp(i).fname = "low_melt_rate.mp4"; %save file name
+        if grounding_line_advection_profile
+            pp(i).fname = "low_melt_rate_GroundingLineAdvection.mp4";
+        end
+        
         pp(i).H0    = 330;  %initial ice thickness
         pp(i).dt = 2;
     end
@@ -53,20 +60,26 @@ for ip = 1:2 %for each parameter set
 
     i = 1;
     dimless_crev_depth = 0; %seed the dimensionless crevasse depth
+    ghf = 48; 
+    TgfF = get_grounding_line_temp(ghf, pp(ip).Ts, pp(ip).H0);
+
     while (i < pp(ip).ntmax) && (dimless_crev_depth < 1)
         pp(ip).lambda;
-        [dimless_crev_depth, stress_intensity] = get_dimless_crev_depth(pp(ip));
-
-        %clf;plot_config(pp(ip), dimless_crev_depth, stress_intensity);
-        sgtitle(['t = ' num2str(pp(ip).t) ', H = ' num2str(pp(ip).H)], 'FontName', 'GillSans', 'FontSize', 20);
+        %anonT = @(z) (pp(ip).Ts + (pp(ip).Tb -pp(ip).Ts)*exp(-z/pp(ip).l)); %purely exponential 
+        if grounding_line_advection_profile
+        anonT = @(z) TgfF(z) + (pp(ip).Tb - TgfF(z)).*exp(-z/pp(ip).l); %with advected grounding line contribution
+        end
+        [dimless_crev_depth, stress_intensity] = get_dimless_crev_depth(pp(ip), anonT);
+        
+%         clf;plot_config(pp(ip), dimless_crev_depth, stress_intensity, anonT);
+%         sgtitle(['t = ' num2str(pp(ip).t) ', H = ' num2str(pp(ip).H)], 'FontName', 'GillSans', 'FontSize', 20);
+%         drawnow; %pause
 
         % store the solution
         ss(ip,i).t = pp(ip).t;
         ss(ip,i).H = pp(ip).H;
         ss(ip,i).dimless_crev_depth = dimless_crev_depth;
         ss(ip,i).stress_intensity = stress_intensity;
-
-        %drawnow;% shg; %pause
 
         %update the thickness and dimensionless quantities
         pp(ip).H     = pp(ip).H + pp(ip).dt*pp(ip).dhdt;
@@ -105,11 +118,14 @@ for ip = 1:2
         open(v)
     end
 
-    for it = 1:tt(ip) %loop over timesteps
+    for it = 1:10:tt(ip) %loop over timesteps
         clf;
 
         l =  pp(ip).kappa /ss(ip,it).H / pp(ip).mdot;
         anonT = @(z) (pp(ip).Ts + (pp(ip).Tb - pp(ip).Ts)*exp(-z/l));
+        if grounding_line_advection_profile
+        anonT = @(z) TgfF(z) + (pp(ip).Tb- TgfF(z)).*exp(-z/l); %with advected grounding line contribution
+        end
 
         %setup plot positions
         w = 0.14;
@@ -163,7 +179,6 @@ for ip = 1:2
         xlabel('temp (C)', 'FontName', 'GillSans'); %ylabel('dimensionless depth', 'FontName', 'GillSans')
 
 
-
         % plot the temp profile in nondimensional depth for all times up to
         % now
         
@@ -172,16 +187,14 @@ for ip = 1:2
         hold on
         plot([xl,xm], [0,0], 'k', 'linewidth', 2);
         plot([xl,xm], [1,1], 'k', 'linewidth', 2);
-        for iit = 1
-            lold = pp(ip).kappa /ss(ip,iit).H / pp(ip).mdot;
-            anonTold = @(z) (pp(ip).Ts + (pp(ip).Tb - pp(ip).Ts)*exp(-z/lold));
-            %plot(anonTold(zz)-273.15, zz, 'linewidth', 1.75, 'color', colmap(ip,iit, :));
-            plot(anonTold(zz)-273.15, zz, 'k--','linewidth', 1.75);
-
+        if it == 1 %save the time zero profile
+            TT0 = anonT(zz)-273.15;         
         end
+      
+        plot(TT0, zz, 'k--','linewidth', 1.75);
+        
         plot(anonT(zz)-273.15, zz, 'linewidth', 1.75,'Color',  colmap(ip,it, :));
         ylabel('dimensionless depth', 'FontName', 'GillSans')
-
 
         xlabel('temp (C)', 'FontName', 'GillSans'); %ylabel('dimensionless depth', 'FontName', 'GillSans')
         xlim([xl,xm])
@@ -208,8 +221,8 @@ for ip = 1:2
         sgtitle(['t = ' num2str(ss(ip,it).t) 'yrs, H = ' num2str(ss(ip,it).H) 'm'] , 'FontName', 'GillSans', 'FontSize', 20);
 
 
-        %pause
-        %drawnow
+%         pause
+%         drawnow
         if make_vid
             frame = getframe(gcf);
             writeVideo(v,frame);
@@ -228,8 +241,8 @@ end
 
 %% functions
 % plot the temperature profile and crack width
-function plot_config(pp, dimless_crev_depth, stress_intensity)
-anonT = @(z) (pp.Ts + (pp.Tb - pp.Ts)*exp(-z/pp.l));
+function plot_config(pp, dimless_crev_depth, stress_intensity, anonT)
+%anonT = @(z) (pp.Ts + (pp.Tb - pp.Ts)*exp(-z/pp.l));
 
 %setup plot positions
 w = 0.14;

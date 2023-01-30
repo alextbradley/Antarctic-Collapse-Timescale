@@ -1,7 +1,6 @@
-function [dimless_crev_depth, stress_intensity] = get_dimless_crev_depth(pp)
+function [dimless_crev_depth, stress_intensity] = get_dimless_crev_depth(pp, anonT)
 dz = 1e-2; 
 db = 1e-2:1e-2:(1-1e-2);  %grid for the stress intensity algoritm
-anonT = @(z) (pp.Ts + (pp.Tb - pp.Ts)*exp(-z/pp.l));
 
 [stress_intensity,~,~,~] = get_stress_intensity(dz,db,pp.lambda,anonT);
 
