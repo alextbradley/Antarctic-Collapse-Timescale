@@ -1,8 +1,8 @@
 function collapse_time_row = circum_Antarctic_collapse_time(nr,nrow)
 % return the collapse time for the nth row of the partition, partitioned
 % into nr pieces.
-addpath('../functions')
-f = load('../data/ice_sheet_data.mat');
+addpath('../../functions')
+f = load('../../data/ice_sheet_data.mat');
 iidx = find(~isnan(f.H) & ~isnan(f.dhdtadj) & ~isnan(f.eflow) & ~isnan(f.m));
 
 %nrow = 2; 
