@@ -1,4 +1,5 @@
 *.mat
+*.out
 *.h5
 *.nc
 *.png
