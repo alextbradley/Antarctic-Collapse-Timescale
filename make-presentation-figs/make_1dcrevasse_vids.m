@@ -113,12 +113,12 @@ colmap(2,:,:) = cc;
 for ip = 1:2
     if make_vid
         v = VideoWriter(pp(ip).fname, 'MPEG-4');
-        v.FrameRate= 5;
+        v.FrameRate= 20;
         v.Quality =  100;
         open(v)
     end
 
-    for it = 1:10:tt(ip) %loop over timesteps
+    for it = 1:tt(ip) %loop over timesteps
         clf;
 
         l =  pp(ip).kappa /ss(ip,it).H / pp(ip).mdot;
