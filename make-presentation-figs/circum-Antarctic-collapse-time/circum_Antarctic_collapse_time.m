@@ -1,6 +1,9 @@
 function collapse_time_row = circum_Antarctic_collapse_time(nr,nrow)
 % return the collapse time for the nth row of the partition, partitioned
 % into nr pieces.
+num_cpu=32;
+poolobj = parpool('local',num_cpu);
+
 addpath('../../functions')
 f = load('../../data/ice_sheet_data.mat');
 iidx = find(~isnan(f.H) & ~isnan(f.dhdtadj) & ~isnan(f.eflow) & ~isnan(f.m));
@@ -81,7 +84,8 @@ parfor ip = 1:np
     if (~isnan(pp.dhdt) && ~isnan(pp.mdot) && ~isnan(pp.epsxx) && pp.epsxx > 0)
         collapse_time_row(ip) = get_collapse_time_advect(pp, dt, tmax);
     end
-   ip
+  % ip
 end
-collapse_time_row
+%collapse_time_row
+save(strcat('collapse_time_', num2str(nr),'_', num2str(nrow) , '.mat'), 'collapse_time_row', 'idx', 'nr', 'nrow');
 end
