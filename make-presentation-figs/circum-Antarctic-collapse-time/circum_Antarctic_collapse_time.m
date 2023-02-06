@@ -44,11 +44,16 @@ frac_tough = 150*1e3;
 ghf = 48; %geothermal heat flux
 
 %% loop over points in this 'row'
+fidx = idx(:, nrow);
+fidx = fidx(fidx ~=0);
+if nrow == nr
+    np = length(fidx);
+end
 collapse_time_row = nan(np,1);
-H = h(idx(:, nrow));
-DHDT = dhdt(idx(:, nrow));
-EPSXX = epsxx(idx(:, nrow));
-MDOT = mdot(idx(:, nrow));
+H = h(idx(1:np, nrow));
+DHDT = dhdt(idx(1:np, nrow));
+EPSXX = epsxx(idx(1:np, nrow));
+MDOT = mdot(idx(1:np, nrow));
 parfor ip = 1:np
 
     %set up the parameters
