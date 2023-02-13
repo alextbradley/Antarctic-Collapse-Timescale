@@ -16,11 +16,11 @@ term2 = zeros(1,length(db));
 term3 = zeros(1,length(db));
 
     for idb = 1:length(db)
-        G = zeros(size(zz));
-        for iG = 1:length(G)
-            G(iG) = get_G(zz(iG),db(idb));
-        end
-  %     G = get_G(zz,db(idb));
+     %   G = zeros(size(zz));
+     %   for iG = 1:length(G)
+     %       G(iG) = get_G(zz(iG),db(idb));
+     %   end
+       G = get_G(zz,db(idb));
 
         integrand = G .* (1 - db(idb)).^(-3/2) .* (1 - zz.^2) .^(-1/2);
        % BB = zeros(size(zz));
