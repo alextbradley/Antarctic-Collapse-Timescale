@@ -78,7 +78,7 @@ parfor ip = 1:np
 
     %dimensionless quantities
     pp.l      = pp.kappa/pp.H0/pp.mdot; %initial boundary layer lengthscale
-    pp.F      = pp.frac_tough / pp.H0 / pp.rhoi / pp.g;
+    pp.F      = pp.frac_tough / (pp.H0)^(3/2) / pp.rhoi / pp.g;
     pp.lambda = 2*sign(pp.epsxx)*abs(pp.epsxx^(1/pp.n)) * pp.B0 / pp.rhoi / pp.g /  pp.H0;
 
     % timestepping quantities 
