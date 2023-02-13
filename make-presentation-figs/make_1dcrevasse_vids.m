@@ -6,7 +6,7 @@
 clear
 addpath('..')
 addpath('../functions')
-make_vid = 1;
+make_vid = 0;
 grounding_line_advection_profile = 1; %set to one to have the advected profile superimposed on the BL profile
 %% Parameters
 pp = struct;
@@ -37,7 +37,7 @@ for i = 1:2
             pp(i).fname = "low_melt_rate_GroundingLineAdvection.mp4";
         end
         
-        pp(i).H0    = 330;  %initial ice thickness
+        pp(i).H0  = 330;  %initial ice thickness
         pp(i).dt = 2;
     end
     pp(i).dhdt = -pp(i).mdot;
@@ -46,7 +46,7 @@ for i = 1:2
     %compute dimensionless quantities
     pp(i).l      = pp(i).kappa/pp(i).H0/pp(i).mdot; %boundary layer lengthscale
     pp(i).lambda = 2*sign(pp(i).epsxx)*abs(pp(i).epsxx^(1/pp(i).n)) * pp(i).B0 / pp(i).rhoi / pp(i).g /  pp(i).H0;
-    pp(i).F      = pp(i).frac_tough / pp(i).H0 / pp(i).rhoi / pp(i).g;
+    pp(i).F      = pp(i).frac_tough / (pp(i).H0)^(3/2) / pp(i).rhoi / pp(i).g;
 
     % timestepping quantities
     pp(i).t  = 0; %timenow
@@ -70,6 +70,7 @@ for ip = 1:2 %for each parameter set
         anonT = @(z) TgfF(z) + (pp(ip).Tb - TgfF(z)).*exp(-z/pp(ip).l); %with advected grounding line contribution
         end
         [dimless_crev_depth, stress_intensity] = get_dimless_crev_depth(pp(ip), anonT);
+       
         
 %         clf;plot_config(pp(ip), dimless_crev_depth, stress_intensity, anonT);
 %         sgtitle(['t = ' num2str(pp(ip).t) ', H = ' num2str(pp(ip).H)], 'FontName', 'GillSans', 'FontSize', 20);
@@ -86,10 +87,10 @@ for ip = 1:2 %for each parameter set
         pp(ip).t      = pp(ip).t + pp(ip).dt;
         pp(ip).l      = pp(ip).kappa/pp(ip).H/pp(ip).mdot; %boundary layer lengthscale
         pp(ip).lambda = 2*sign(pp(ip).epsxx)*abs(pp(ip).epsxx^(1/pp(ip).n)) * pp(ip).B0 / pp(ip).rhoi / pp(ip).g /  pp(ip).H;
-        pp(ip).F      = pp(ip).frac_tough / pp(ip).H / pp(ip).rhoi / pp(ip).g;
+        pp(ip).F      = pp(ip).frac_tough / (pp(ip).H)^(3/2) / pp(ip).rhoi / pp(ip).g;
         %^^^ comment line out to expose only temperature profile changes
         %pause
-        i = i+1
+        i = i+1;
 
 
     end
@@ -222,7 +223,7 @@ for ip = 1:2
 
 
 %         pause
-%         drawnow
+        drawnow
         if make_vid
             frame = getframe(gcf);
             writeVideo(v,frame);
