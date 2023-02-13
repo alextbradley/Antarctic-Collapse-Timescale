@@ -14,7 +14,7 @@ zz = dz:dz:(1-dz);
 term1 = zeros(1,length(db));
 term2 = zeros(1,length(db));
 term3 = zeros(1,length(db));
-
+BB = exp(T0./T(zz) - C./(Tr - T(zz)).^k);
     for idb = 1:length(db)
      %   G = zeros(size(zz));
      %   for iG = 1:length(G)
@@ -24,7 +24,7 @@ term3 = zeros(1,length(db));
 
         integrand = G .* (1 - db(idb)).^(-3/2) .* (1 - zz.^2) .^(-1/2);
        % BB = zeros(size(zz));
-        BB = exp(T0./T(zz) - C./(Tr - T(zz)).^k);
+     
        %  for iz = 1:length(zz)
        %      BB(iz) = exp(T0/T(zz(iz)) - C/(Tr - T(zz(iz)))^k);
        % end
