@@ -20,8 +20,10 @@ term3 = zeros(1,length(db));
         for iG = 1:length(G)
             G(iG) = get_G(zz(iG),db(idb));
         end
+  %     G = get_G(zz,db(idb));
+
         integrand = G .* (1 - db(idb)).^(-3/2) .* (1 - zz.^2) .^(-1/2);
-        %BB = zeros(size(zz));
+       % BB = zeros(size(zz));
         BB = exp(T0./T(zz) - C./(Tr - T(zz)).^k);
        %  for iz = 1:length(zz)
        %      BB(iz) = exp(T0/T(zz(iz)) - C/(Tr - T(zz(iz)))^k);
