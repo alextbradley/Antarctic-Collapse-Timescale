@@ -19,8 +19,10 @@ y: unit [m] y position
 xx: unit [m] x position (in 1 x nx array)
 yy: unit [m] y position (in 1 x ny array)
 dhdt: unit [m/yr] thinning rate dh/dt from Smith et al. 2020 (doi: 10.1126/science.aaz5845), downscaled from 5km grid of Smith et al. to 1km grid
-dhdtadj: unit [m/yr] thinning rate dh/dt from Smith et al. 2020 (doi: 10.1126/science.aaz5845), downscaled from 5km grid of Smith et al. to 1km grid. 
+dhdtadj: unit [m/yr] thinning rate 'dhdt' from Smith et al. 2020 (doi: 10.1126/science.aaz5845), downscaled from 5km grid of Smith et al. to 1km grid. 
                      WAIS section replaced by more complete data provided by B. Smith (pers comm).
+dmdt: unit [m/yr] thinning rate 'dmdt' from Smith et al. 2020 including firn-air correction. 
+dmdtadj: unit [m/yr] thinning rate 'dmdt' from Smith et al. 2020 including firn-air correction with ad-hoc WAIS correction. 
 
 MOA2009_1km: unit [NaN] satellite image
 bb0448974g_2_1.h5
