@@ -24,6 +24,7 @@ colormap(ax(1) ,cmap)
 
 warm_col = [203,0,63]/255; %warm shelves colour
 cold_col = [0, 63, 203]/255; %cold shelves colour
+grey_col =  0.5*[1,1,1];
 %% Make (a)
 
 %
@@ -48,7 +49,9 @@ ylabel('melt rate (m/yr)', 'interpreter', 'none')
 
 %colourbar
 cc = colorbar;
-clabels = 10.^(-3:1); clim(log10(clabels([1 end]))); set(cc,'Ticks',log10(clabels),'TickLabels',clabels);
+clabels = 10.^(-3:1); 
+clim(log10(clabels([1 end])));
+set(cc,'Ticks',log10(clabels),'TickLabels',clabels);
 cc.Label.Interpreter = 'latex';
 cc.Label.String = '$\ell$';
 cc.Label.FontSize = 15;
@@ -68,7 +71,7 @@ box(ax(1), 'on')
 hold on
 levs = [-1.2, -1.5];
 for i = 1:length(levs)
-contour(H, mdot, log10(ell), levs(i)*[1,1], 'LineStyle','--', 'Color', 0.5*[1,1,1], 'LineWidth', 2);
+contour(H, mdot, log10(ell), levs(i)*[1,1], 'LineStyle','--', 'Color', grey_col, 'LineWidth', 2);
 end
 
 
@@ -124,7 +127,7 @@ for i = 1:length(jdir)
     shelf_total = area_shelf(i); %total number of points in shelf
     shelf_keep  = sum(idx_for_calc); %number of points with thickness data
     percov(i) = shelf_keep/shelf_total * 100;
-    threshold_keep = 50;
+    threshold_keep = 40;
     if (percov(i) > threshold_keep) || shelf == "Thwaites" %only plot if > threshold% coverage
         
         l = kappai / h_ave(i) / m_ave(i);
@@ -132,11 +135,16 @@ for i = 1:length(jdir)
             shelf_type(i) = 1;
             ptcol = cold_col;
             t(i) = text(h_ave(i)-81,m_ave(i),shelf, 'FontSize', fs, 'FontName', 'Arial');
-        else
+        elseif l < 10.^(min(levs))
             shelf_type(i) = 2;
             ptcol = warm_col;
             
             t(i) = text(ax(1),h_ave(i)+11,m_ave(i),shelf, 'FontSize', fs, 'FontName', 'Arial');
+        else 
+             shelf_type(i) = 3;
+             t(i) = text(ax(1),h_ave(i)+11,m_ave(i),shelf, 'FontSize', fs, 'FontName', 'Arial');
+             ptcol =grey_col;
+
         end
 
         plot(ax(1), h_ave(i),m_ave(i), 'o', 'MarkerFaceColor', ptcol, 'MarkerEdgeColor', ptcol, 'MarkerSize', 6.5);
@@ -195,14 +203,17 @@ ax(2).ZLim = [0.15,40];
 %project onto the l axis
 scatter3(ax(2),min(ax(2).XLim)*ones(1,sum(shelf_type==1)), epsxx_ave(shelf_type == 1),1./thinrate_ave(shelf_type == 1),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'Filled');
 scatter3(ax(2),min(ax(2).XLim)*ones(1,sum(shelf_type==2)), epsxx_ave(shelf_type == 2),1./ thinrate_ave(shelf_type == 2), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'Filled');
+scatter3(ax(2),min(ax(2).XLim)*ones(1,sum(shelf_type==3)), epsxx_ave(shelf_type == 3),1./ thinrate_ave(shelf_type == 3), ms,repmat(grey_col, sum(shelf_type == 3), 1), 'Filled');
 
 % project onto the epsxx axis
 scatter3(ax(2), ell_ave(shelf_type == 1), max(ax(2).YLim)*ones(1,sum(shelf_type==1)),1./thinrate_ave(shelf_type == 1),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'Filled');
 scatter3(ax(2), ell_ave(shelf_type == 2), max(ax(2).YLim)*ones(1,sum(shelf_type==2)),1./ thinrate_ave(shelf_type == 2), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'Filled');
+scatter3(ax(2), ell_ave(shelf_type == 3), max(ax(2).YLim)*ones(1,sum(shelf_type==3)),1./ thinrate_ave(shelf_type == 3), ms,repmat(grey_col, sum(shelf_type == 3), 1), 'Filled');
 
 %project onto the thinning rate axis
 scatter3(ax(2), ell_ave(shelf_type == 1),  epsxx_ave(shelf_type == 1),min(ax(2).ZLim)*ones(1,sum(shelf_type==1)),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'Filled');
 scatter3(ax(2), ell_ave(shelf_type == 2),  epsxx_ave(shelf_type == 2), min(ax(2).ZLim)*ones(1,sum(shelf_type==2)), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'Filled');
+scatter3(ax(2), ell_ave(shelf_type == 3),  epsxx_ave(shelf_type == 3), min(ax(2).ZLim)*ones(1,sum(shelf_type==3)), ms,repmat(grey_col, sum(shelf_type == 3), 1), 'Filled');
 
 
 
