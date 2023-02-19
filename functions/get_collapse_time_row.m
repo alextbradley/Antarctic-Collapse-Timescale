@@ -1,15 +1,15 @@
-function  collapse_time_row = get_collapse_time_row(row_H, row_dhdt, row_epsxx, row_mdot, row_tags, ...
+function  collapse_time_row = get_collapse_time_row(row_H, row_dhdt, row_epsxx, row_mdot, row_tags, row_dt, row_tmax,...
                                 Tb, Ts, B0, rhoi, g, kappa, n, frac_tough, ghf)
 ny = length(row_H);
 collapse_time_row = nan(1,ny);
 for iy = 1:ny
-    if row_tags(iy) == 6
+    if row_tags(iy) == 6 
         %set up the parameters
         pp = struct;
 
         %variable quantities
         pp.H0    = row_H(iy);   %initial ice thickness
-        pp.dhdt  = row_dhdt(iy);      %rate of change of thickness (negative for thinning)
+        pp.dhdt  = row_dhdt(iy);  %rate of change of thickness (negative for thinning)
         pp.epsxx = row_epsxx(iy);  %strain rate
         pp.mdot  = row_mdot(iy);     %melt rate
 
@@ -30,16 +30,15 @@ for iy = 1:ny
         pp.lambda = 2*sign(pp.epsxx)*abs(pp.epsxx^(1/pp.n)) * pp.B0 / pp.rhoi / pp.g /  pp.H0;
 
 
-        tmax = 10000;
-
-
         %compute the collapse time
         %dt = abs(1/dhdts(ix,iy)); %larger timesteps for smaller dhdt
  
-        dt = max([5,abs(1/pp.dhdt)]); %larger timesteps for smaller dhdt
+        dt = row_dt(iy); %larger timesteps for smaller dhdt
+        tmax = row_tmax(iy);
 
         %iy
-        collapse_time_row(iy) = get_collapse_time_advect(pp, dt, tmax);
+        nt = 100; %number of trial time output points
+        collapse_time_row(iy) = get_collapse_time_advect(pp, nt, tmax);
 
 
         %fprintf('Completed %.3f percent of collase time points in square \n', count*100/ sum(sum(tags==6)))
