@@ -7,6 +7,7 @@ function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(s
 % num_cpu=2;
 % poolobj = parpool('local',num_cpu);
 
+shelf_name = string(shelf_name);
 addpath('../functions')
 
 %% Load the ice shelf data
@@ -93,5 +94,5 @@ collapse_time(xminidx:step:xmaxidx, yminidx:step:ymaxidx) = collapse_time_square
 
 
 toc
-%save(strcat('collapse_time_', shelf_names,'_step', step, '.mat'), 'collapse_time_row',);
+save(strcat('collapse_time_', shelf,'_step', step, '.mat'));
 end
