@@ -90,6 +90,7 @@ epsxx_ave = zeros(1,length(jdir));
 thinrate_ave = zeros(1,length(jdir));
 
 % loop over shelves
+shelf_names = strings;
 for i = 1:length(jdir)
     shelf = jdir(i).name;
     shelf = strrep(shelf,'.mat',''); %strip the .mat at the end
