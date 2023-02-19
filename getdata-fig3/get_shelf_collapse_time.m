@@ -4,7 +4,7 @@ function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(s
 %the step in the grid resolution (integer, set to 1 for whole grid)
 
 % return the collapse time for the shelf inputted
-% num_cpu=2;
+% num_cpu=32;
 % poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
@@ -63,6 +63,8 @@ ghf = 48; %geothermal heat flux
 
 collapse_time_square = nan(size(ms));
 tic
+tmax = 1e4; %max time
+dt = 5; %timestep
 parfor ix =  1:length(xs)
 %for ix = 1:length(xs)
 
@@ -74,8 +76,8 @@ parfor ix =  1:length(xs)
     row_mdot = ms(ix,:);
     
     %timestepping parameters
-    row_dt  = max(5,abs(1./row_dhdt)); %timestep (larger timesteps for smaller dhdt?)
-    row_tmax = 1e5*ones(size(row_mdot));   %max time                  %maximum time
+    row_dt  = max(dt,abs(1./row_dhdt)); %timestep (larger timesteps for smaller dhdt?)
+    row_tmax = tmax*ones(size(row_mdot));   %max time                  %maximum time
     
     %whos row_*
 
@@ -94,5 +96,5 @@ collapse_time(xminidx:step:xmaxidx, yminidx:step:ymaxidx) = collapse_time_square
 
 
 toc
-save(strcat('collapse_time_', shelf,'_step', step, '.mat'));
+save(strcat('collapse_time_', shelf,'_step', num2str(step), '.mat'));
 end
