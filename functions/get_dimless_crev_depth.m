@@ -6,7 +6,7 @@ db = 1e-2:1e-2:(1-1e-2);  %grid for the stress intensity algoritm
 
 
 dbc = intersections([0,1], [pp.F,pp.F], db, stress_intensity);
-dbc
+%dbc
 
 if isempty(dbc) %no root
     if all(stress_intensity > pp.F)
