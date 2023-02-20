@@ -1,4 +1,4 @@
-function collapse_time = get_collapse_time_advect(pp, dt, tmax)
+function collapse_time = get_collapse_time_advect_Nye(pp, dt, tmax)
 % Compute the collapse time of a column for the advected profile
 
 tnow = 0;
@@ -13,12 +13,12 @@ pp.F      = pp.frac_tough / (pp.H0)^(3/2) / pp.rhoi / pp.g;
 TgfF = get_grounding_line_temp(pp.ghf, pp.Ts, pp.H0);
 anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution
 %anonT = @(z) min(anonT(z), 273.15);
-dimless_crev_depth = get_dimless_crev_depth(pp, anonT); %time zero crevasse depth
+dimless_crev_depth = get_dimless_crev_depth_Nye(pp, anonT); %time zero crevasse depth
 
 while (i < nsteps) &&  (dimless_crev_depth < 1)
     anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution
     %anonT = @(z) min(anonT(z), 273.15);  %don't let it go above freezing
-    dimless_crev_depth = get_dimless_crev_depth(pp, anonT);
+    dimless_crev_depth = get_dimless_crev_depth_Nye(pp, anonT);
 
 
     %update thickness and time

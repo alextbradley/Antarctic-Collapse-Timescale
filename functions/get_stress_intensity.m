@@ -15,6 +15,12 @@ term1 = zeros(1,length(db));
 term2 = zeros(1,length(db));
 term3 = zeros(1,length(db));
 BB = exp(T0./T(zz) - C./(Tr - T(zz)).^k);
+
+if ~all(isreal(T(zz)))
+    pause
+end
+
+
     for idb = 1:length(db)
      %   G = zeros(size(zz));
      %   for iG = 1:length(G)

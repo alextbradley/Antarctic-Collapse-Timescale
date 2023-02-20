@@ -54,17 +54,17 @@ for izeta = 1:length(zeta)
         z(izeta,ix) = zeta(izeta)*H(ix) + b(ix); 
         xx(izeta,ix) = x(ix);
         T(izeta, ix) = Tgf(xi) + (Tstar(ix) - Tgf(xi0))*exp(-mdot(ix) * H(ix)/kappai * zeta(izeta));
-        if T(izeta, ix) >0 
-            Tstar(ix)
-            Tgf(xi0)
-            mdot(ix)
-             H(ix)
-             kappai
-             zeta(izeta)
-           
-
-            pause
-        end
+%         if T(izeta, ix) >0 
+%             Tstar(ix)
+% %             Tgf(xi0)
+%             mdot(ix)
+%              H(ix)
+%              kappai
+%              zeta(izeta)
+%            
+% 
+%             pause
+%         end
 
     end
 end
