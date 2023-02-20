@@ -1,11 +1,15 @@
 % Make figure 2 of the ms:
 % (a) contour plot of l = kappa/(mH), with ice shelves labelled
-% (b) locations of ice shelves in (l, strain rate,  dhdt) space
+% (b) locations of ice shelves in (l, strain rate,  dhdt) space.
+%
+% This code also produces figures 3c, showing distributions and mean
+% of the collapse timescale for individual shelves
 %
 % 17/02/23, ATB (aleey@bas.ac.uk), MIT licence
 %% Preliminaries
 %clear
 addpath('../functions');
+%f = load('../data/ice_sheet_data.mat');
 fig = figure(1);clf
 positions = [0.05, 0.12, 0.39, 0.83;
              0.58, 0.12, 0.38, 0.83];
@@ -27,14 +31,9 @@ cmap = flipud(cmocean('balance', 100));%cmap = cmap(1:end-10,:);
 colormap(ax(1), cmap);
 
 
-% T = [cmap(1,:); cmap(end,:)]
-% x = [0 1];
-% cmap = interp1(x,T,linspace(0,1,100));
-% colormap(ax(1) ,cmap)
-
 warm_col = [203,0,63]/255; %warm shelves colour
 cold_col = [0, 63, 203]/255; %cold shelves colour
-%% Make (a)
+%% Figure 2a
 
 %
 % Make the contour map
@@ -93,19 +92,27 @@ end
 % init storage
 jdir = dir('../data/ice-shelves/major/*.mat'); %where shelf files are stored
 
-%we'll also work out shelf by shelf collapse dtaa here
+%we'll also work out shelf by shelf collapse data here
 ff = load('figure3-data.mat');
 ct = ff.collapse_time; %collapse time data
 tags = ff.tags;
 
+%initialize storage
 m_ave = zeros(1,length(jdir));
 h_ave = zeros(1,length(jdir));
 mstd = zeros(1,length(jdir));
 hstd = zeros(1,length(jdir));
-percov = zeros(1,length(jdir)); %store the % coverage
+percov = zeros(1,length(jdir)); %store the % coverage of input data
+collapse_coverage  =  zeros(1,length(jdir)); %per of points with non-nan output
 shelf_type = zeros(1,length(jdir)); %flags for keeping the shelf or not (0), cold (1), warm (2)
 epsxx_ave = zeros(1,length(jdir));
 thinrate_ave = zeros(1,length(jdir));
+shelf_counts = cell(1,length(jdir)); %for storing individual shelf counts
+ct_ave = zeros(1,length(jdir)); %these are the mean values of the collapse time
+ll = zeros(1,length(jdir)); %store the lengthscales l
+shelf_cols = zeros(length(jdir), 3);%store plot colours
+area_shelf = zeros(1,length(jdir)); %store shelf areas
+
 
 % loop over shelves
 shelf_names = strings;
@@ -123,15 +130,26 @@ for i = 1:length(jdir)
     epsxx_shelf = f.eflow; epsxx_shelf = epsxx_shelf(g.IN);
     dhdt_shelf = f.dhdtadj; dhdt_shelf = dhdt_shelf(g.IN);
     idx =  (~isnan(h_shelf)) &  (m_shelf > 1e-6)  & (epsxx_shelf > 1e-6) &  (-dhdt_shelf > 1e-6) ; %points where we have point thickness,  melt rate > 0, strain > 0, thinning < 0
+    %idx =  (~isnan(h_iceshelf)) &  (~isnan(m_iceshelf)); %points where we have point thickness and melt rate > 0
     idx_for_calc =  (~isnan(h_shelf)) &  (~isnan(m_shelf))  & (~isnan(epsxx_shelf)) &  (~isnan(-dhdt_shelf)); %points where we have data for 
 
+    %compute the shelf area as a sanity check?
     area_shelf(i) = length(h_shelf(~isnan(h_shelf))); %size in km^3 (grid size = 1e3 * 1e3)
 
-    %idx =  (~isnan(h_iceshelf)) &  (~isnan(m_iceshelf)); %points where we have point thickness and melt rate > 0
+    %get data points which satisfy the idx criterion
     h_shelf = h_shelf(idx);
     m_shelf = m_shelf(idx); %arrays with points in particular shelf with both melt and thicknes
     epsxx_shelf = epsxx_shelf(idx);
     thinrate_shelf = -dhdt_shelf(idx);
+
+
+    %compute averages of strain, thickness, melt, thining rate
+%     
+%     pd = fitdist(m_shelf,'kernel');  m_ave(i) = mean(pd);
+%     pd = fitdist(h_shelf,'kernel');  h_ave(i) = mean(pd);
+%     pd = fitdist(epsxx_shelf,'kernel');  epsxx_ave(i) = mean(pd);
+%     pd = fitdist(thinrate_shelf,'kernel');   thinrate_ave(i) = mean(pd);
+    
     m_ave(i) = median((m_shelf));
     h_ave(i) = median((h_shelf));
     epsxx_ave(i) = median(epsxx_shelf);
@@ -141,30 +159,20 @@ for i = 1:length(jdir)
     ct_shelf = ct(g.IN); %only the points in this shelf
     h = f.H;
     hs = h(g.IN);
-    collapse_coverage(i) = sum(sum(~isnan(ct_shelf)))/sum(sum(~isnan(hs))) * 100;
+    collapse_coverage(i) = sum(sum(~isnan(ct_shelf)))/sum(sum(~isnan(hs))) * 100; %number of points with non nan collapse time
 
-    aa = (ct_shelf(~isnan(ct_shelf))); %non nan points
-    %aa = aa(aa < 1e4); %remove points with max collapse time
-    ct_ave(i) = median(aa);
-    ct_std(i) = std(aa);
+    %compute the mean of this distribution
+    aa = (ct_shelf(~isnan(ct_shelf))); %all non nan points in shelf
     shelf_counts{i} = aa;
     if ~isempty(aa)
-    figure(10); clf; hold on;   histogram(aa, 'Normalization','pdf'); title(shelf);
-    axxx = gca; plot(ct_ave(i)*[1,1], axxx.YLim, 'k--', 'linewidth',2)
-    pd = fitdist(aa,'kernel');
-    x = 1:20:max(axxx.XLim);
-    y = pdf(pd,x);
-    plot(x,y,'r', 'linewidth',2)
-    plot(mean(pd)*[1,1], axxx.YLim, 'b--', 'linewidth',2)
-   % if shelf == "Getz";   drawnow;     pause; end
-    ct_ave(i) = mean(pd);
+        pd = fitdist(aa,'kernel');
+        ct_ave(i) = mean(pd);
     end
     
 
     % plot point and add name
-    shelf_total = area_shelf(i); %total number of points in shelf
     shelf_keep  = sum(idx_for_calc); %number of points with thickness data
-    percov(i) = shelf_keep/shelf_total * 100;
+    percov(i) = shelf_keep/area_shelf(i) * 100;
     threshold_keep = 50;
     l = kappai / h_ave(i) / m_ave(i);
     ll(i) = l;
@@ -189,36 +197,25 @@ for i = 1:length(jdir)
     end
     % work out what the colour should be 
     fr = (log10(l) - min(cl))/diff(cl); %fraction of way along colourmap
+    fr = min(fr,1);
+    fr = max(fr,0);
+ 
     if ~isnan(fr)
     shelf_cols(i,:) = cmap(round(fr*length(cmap)),:);
     end
     
-        
-
-    % add boxes around
-%     mstd(i) = std(m_iceshelf);
-%     hstd(i) = std(h_iceshelf);
-%     xf = [hmean(i) - hstd(i), hmean(i) + hstd(i),  hmean(i) + hstd(i), hmean(i) - hstd(i)];
-%     yf = [mmean(i) - mstd(i), mmean(i) - mstd(i),  mmean(i) + mstd(i), mmean(i) + mstd(i)];
-%     yf = max(yf,0.1);
-%     fill(xf, yf, 0.5*[1,1,1], 'FaceAlpha',0.3, 'EdgeAlpha',0.7);
-     
+         
 end %end loop over shelves
 
 
 %% Make (b)
 
 ell_ave = kappai./ h_ave ./m_ave; %mean of the lengthscales
-ell_ave(shelf_type == 0)= nan; %so we only plot those points in (a)
+idx = shelf_type > 0;
+ls = sum(idx);
 
+%plot setup
 ms = 40; %markersize
-% scatter3(ax(2), ell_ave(shelf_type == 1), epsxx_ave(shelf_type == 1), thinrate_ave(shelf_type == 1),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'filled');
-% scatter3(ax(2), ell_ave(shelf_type == 1), epsxx_ave(shelf_type == 1), thinrate_ave(shelf_type == 1),ms, repmat([0,0,0], sum(shelf_type == 1), 1)); %add the outside in black
-
-% scatter3(ax(2),ell_ave(shelf_type == 2), epsxx_ave(shelf_type == 2), thinrate_ave(shelf_type == 2), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'filled');
-% scatter3(ax(2), ell_ave(shelf_type == 2), epsxx_ave(shelf_type == 2), thinrate_ave(shelf_type == 2),ms, repmat([0,0,0], sum(shelf_type == 2), 1)); %add the outside in black
-
-
 ax(2).XLabel.String = '$\ell$'; ax(2).XLabel.Interpreter = 'latex';
 ax(2).YLabel.String= 'strain rate (1/yr)';
 ax(2).ZLabel.String = 'inverse thinning rate (yr/m)';
@@ -233,33 +230,9 @@ ax(2).ZLim = 1./flip([ 0.0361   10.0000]);
 ax(2).ZLim = [0.15,40];
  hold(ax(2), 'on');
  box(ax(2), 'on')
-%% project onto axes
-% axinst = axes();
-% axinst.Position = [0.5, 0.2, 0.2, 0.2];
-% hold on
-% box on% set(gca, 'XScale', 'log')
-% set(gca, 'YScale', 'log')
-% axinst.XLabel.String = 'strain rate (1/yr)';
-% axinst.YLabel.String = 'thinning rate (m/yr)';
 
-
-% %project onto the l axis
-% scatter3(ax(2),min(ax(2).XLim)*ones(1,sum(shelf_type==1)), epsxx_ave(shelf_type == 1),1./thinrate_ave(shelf_type == 1),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'Filled');
-% scatter3(ax(2),min(ax(2).XLim)*ones(1,sum(shelf_type==2)), epsxx_ave(shelf_type == 2),1./ thinrate_ave(shelf_type == 2), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'Filled');
-% 
-% % project onto the epsxx axis
-% scatter3(ax(2), ell_ave(shelf_type == 1), max(ax(2).YLim)*ones(1,sum(shelf_type==1)),1./thinrate_ave(shelf_type == 1),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'Filled');
-% scatter3(ax(2), ell_ave(shelf_type == 2), max(ax(2).YLim)*ones(1,sum(shelf_type==2)),1./ thinrate_ave(shelf_type == 2), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'Filled');
-% 
-% %project onto the thinning rate axis
-% scatter3(ax(2), ell_ave(shelf_type == 1),  epsxx_ave(shelf_type == 1),min(ax(2).ZLim)*ones(1,sum(shelf_type==1)),ms, repmat(cold_col, sum(shelf_type == 1), 1), 'Filled');
-% scatter3(ax(2), ell_ave(shelf_type == 2),  epsxx_ave(shelf_type == 2), min(ax(2).ZLim)*ones(1,sum(shelf_type==2)), ms,repmat(warm_col, sum(shelf_type == 2), 1), 'Filled');
-% 
 
 %project onto the l axis
-idx = shelf_type > 0;
-ls = sum(idx);
-
 scatter3(ax(2),min(ax(2).XLim)*ones(1,ls), epsxx_ave(idx),1./thinrate_ave(idx),ms, shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k');
 
 % project onto the epsxx axis
@@ -267,7 +240,6 @@ scatter3(ax(2), ell_ave(idx), max(ax(2).YLim)*ones(1,ls),1./thinrate_ave(idx),ms
 
 %project onto the thinning rate axis
 scatter3(ax(2), ell_ave(idx),  epsxx_ave(idx) ,min(ax(2).ZLim)*ones(1,ls),ms,shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k');
-
 
 
 
@@ -281,72 +253,80 @@ end
 
     ax(2).ZLabel.FontSize = fs+2;
 
-%% make the bar chart
-figure(3); clf; 
+%% Make figure 3c: violin plots of timescales
+figure(2); clf; hold on; box on
+
+% restrict only to those shelves we're keeping
 lk = ll(shelf_type~=0);
 hk = h_ave(shelf_type~=0);
-
-
 ct_avek = ct_ave(shelf_type~=0);
-measure = ct_avek;%./hk * 20;  %!! what to plot
-[~,I] = sort(measure);
-measure = measure(I); %put in order of increasing timesclae
-%ct_avek(ct_avek<10) = 11; %just so it appears
+shelf_typek = shelf_type(shelf_type~=0);
+shelf_countsk = shelf_counts(shelf_type~=0);
 shelf_namesk = shelf_names(shelf_type~=0);
-shelf_namesk = shelf_namesk(I);
-
-   
 bar_coldatak = shelf_cols(shelf_type~=0,:);
-bar_coldatak = bar_coldatak(I,:);
-
-b = bar(measure); %ylim([1e-1,1e2])
-%b = bar(ct_avek); ylim([1e1,1e4])
-b.FaceColor = 'flat';
-xticks(1:length(shelf_namesk))
-set(gca,'xticklabel',shelf_namesk)
-shg
 
 
-b.CData = bar_coldatak;
-set(gca, 'YScale','linear')
-set(gca,'YScale','log')
+% sort the data in increasing mean
+[~,I] = sort(ct_avek);
+lks = lk(I);
+shelf_namesks = shelf_namesk(I);
+shelf_countsks = shelf_countsk(I);
+bar_coldataks = bar_coldatak(I,:);
+shelf_typeks = shelf_typek(I);
+ct_aveks = ct_avek(I); 
 
-%% make bar plot of the dichotomous timescales
-figure(4); clf;
 
-% get the total distributions
-warmsh = [];
-coldsh = [];
-for i = 1:length(shelf_names)
-    if shelf_type(i) == 1
-        coldsh = [coldsh; cell2mat(shelf_counts(i))];
-    elseif shelf_type(i) == 2
-        i;
-        warmsh = [warmsh; cell2mat(shelf_counts(i))];
-    end
+w = 0.4; %width of the dist
+for i = 1:length(shelf_typeks)
+
+    %get the data as array
+    counts = cell2mat(shelf_countsks(i));
+    counts(counts < 10) = 10; %make the plotting a bit nicer
+
+    %remove very long timescale pts
+    counts = counts(counts < 5*1e3);
+
+    %fit a kde to it
+    kde = fitdist(counts,'kernel');
+
+    %evaluate it
+    x = logspace(1,4);
+    y = pdf(kde,x);
+
+    %scale the pdf
+    y = y * w / max(y); 
+
+    % create fill array
+    cline = i; %centreline of distribution
+    xf = [cline + y, flip(cline - y)];
+    yf = [x,flip(x)];
+
+    %fill the data
+    fill(xf, yf, bar_coldataks(i,:), 'linewidth', 1)
+
+    % add mean as a point
+    plot(cline,mean(kde),'ko', 'markerfacecolor', 'k', 'markersize', 5)
+    %or maybe the point of 90 mass or so?
+%     [countsort,~] = sort(counts);
+%     frac = 0.75;
+%     idx = round(length(countsort)*frac); %index frac way along counts
+%     plot(cline, countsort(idx),'ko', 'markerfacecolor', 'k', 'markersize', 5)
+    
+
+
 end
 
-pd_cold = fitdist(coldsh,'kernel');
-pd_warm = fitdist(warmsh,'kernel');
-ydata = [mean(pd_warm), mean(pd_cold)];
+xlim([0,length(shelf_namesk)+1]);
+xticks(1:length(shelf_countsks));
+xticklabels(shelf_namesks);
+set(gca, 'YScale', 'log')
 
-%ydata = [mean(ct_ave(shelf_type == 2)), mean(ct_ave(shelf_type == 1))];
-b = bar(ydata);% ylim([1e-1,1e2])
-%b = bar(ct_avek); ylim([1e1,1e4])
-b.FaceColor = 'flat';
-b.CData = [cmap(15,:); cmap(end-15,:)];
-set(gca,'xticklabel',["warm", "cold"])
+fig = gcf;
+fig.Position(3:4) = [1000, 400];
+ax = gca; ax.FontSize = 14;
 
-figure(5);clf; hold on
-x = logspace(1,4);
-ycold = pdf(pd_cold,x);
-ywarm = pdf(pd_warm, x);
-%plot(x,ywarm,'r', 'linewidth',2);
-%plot(x,ycold,'b', 'linewidth',2);
-histogram(coldsh, 'Normalization', 'pdf')
-histogram(warmsh, 'Normalization', 'pdf')
-legend('cold', 'warm');
-title('distributions of cold and warm shelves');
-%set(gca, 'XScale', 'log')
 
-%% make violin plots of the shape of distributions
+
+
+
+

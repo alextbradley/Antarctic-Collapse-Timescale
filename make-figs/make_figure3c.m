@@ -6,7 +6,8 @@
 % shelf_typek : shelf types (1: cold, 2: warm);
 % ct_avek : mean of distributions
 
-
+shelf_typek = shelf_type(shelf_type~=0);
+shelf_countsk = shelf_counts(shelf_type~=0);
 shelf_namesk = shelf_names(shelf_type~=0);
 
 % sort the data in increasing l
@@ -73,3 +74,4 @@ set(gca, 'YScale', 'log')
 
 fig = gcf;
 fig.Position(3:4) = [1200, 400];
+ax = gca; ax.FontSize = 14;
