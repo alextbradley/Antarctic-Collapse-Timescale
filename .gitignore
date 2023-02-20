@@ -4,7 +4,11 @@
 *.nc
 *.png
 *.eps
-*.pdf
 *.asv
 *.mp4
 *.idraw
+*.svg
+make-presentation-figs/figures/*.pdf
+*.fig
+make-presentation-figs/profiling/* 
+*.DS_Store
