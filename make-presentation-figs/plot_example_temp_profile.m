@@ -9,7 +9,7 @@ ds = 1e3; %flowline spacing
 fname = '../data/ice-shelves/Ross.mat';
 ss = get_flowline_data(fname, data, ds);
 %nf = [50]; %flowline number (for pig, nf = 50 suggested, for Ross, nf =24)
-
+nf = 24;
 %% plot the ice velocity and flowline co-ordinates along flowline
 f = load(fname);
 in = f.IN;
@@ -44,7 +44,6 @@ c.TickLabels = {'10^1','10^2','10^3','10^4'};
 
 % add the flowline
 hold on
-nf = 24;
 flc = ss(nf).flowline;
 hold on
 plot(flc(:,1), flc(:,2), 'w', 'linewidth', 1.75)
@@ -61,7 +60,7 @@ Tgf = TgfF(zeta);
 
 
 Ts  = ss(nf).temp(1) - 273.15;
-ghf = 48; 
+ghf = 40; 
 TgfF = get_grounding_line_temp(ghf, Ts, ss(nf).h(1));
 
 
@@ -92,12 +91,14 @@ title('sergienko et al. flowline temp')
 % This profile assumes that there is no vertical advection, i.e. the
 % grounding line profile advects horizontally. 
 T_exp = zeros(size(T));
-s = ss(nf);
+
+
 kappa = 36;
 for ix = 1:length(x)
     Ts = -20;
     Tb = -2;
-    l  = kappa / s.melt(ix) / s.h(ix);
+    mm = max(s.melt(ix), 0.1); 
+    l  = kappa / mm / s.h(ix);
 
     ll(ix) = l;
     anonT = @(z) ((Tb -  TgfF(z))*exp(-z/l)) ;

@@ -65,7 +65,7 @@ parfor ix = 1:length(xs)
 
     %constant parameters
     Tb    = -2 + 273.15;     %basal temperature (kelvin)
-    Ts    = -18 + 273.15;    %surface temp
+    Ts    = -16 + 273.15;    %surface temp
     B0    = 1.928;  %viscosity constant
     rhoi  = 918.0;  %ice density
     g     = 9.81;   %gravitational acceleration
