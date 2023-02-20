@@ -4,6 +4,8 @@ function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(s
 %the step in the grid resolution (integer, set to 1 for whole grid)
 
 % return the collapse time for the shelf inputted
+% poolobj = gcp('nocreate');
+% if ~isempty(poolobj);  delete(poolobj); end
 % num_cpu=32;
 % poolobj = parpool('local',num_cpu);
 
