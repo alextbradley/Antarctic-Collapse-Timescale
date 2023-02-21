@@ -79,7 +79,7 @@ tags = ff.tags;
 % 1: collapse time
 ax = gca;
 pl = imagesc(ax, log10((ct))); 
-c = colorbar(ax);
+c = colorbar(ax);c.Position(1) = 0.9;
 c.Limits = [1,4];
 set(pl, 'AlphaData', ~isnan(ct));
 set(ax, "YDir", 'reverse')
@@ -126,123 +126,79 @@ c.Ticks = 1:4;
 c.FontSize = fs;
 c.TickLabels = {'10^1', '10^2', '10^3', '10^4'};
 
-%% Make box plots of the shelves
-% import the data from figure 2!
+%% Make figure 3c: violin plots of timescales
+figure(3); clf; hold on; box on
 
-% jdir = dir('../data/ice-shelves/major/*.mat'); %where shelf files are stored
-% warm_col = [203,0,63]/255; %warm shelves colour
-% cold_col = [0, 63, 203]/255; %cold shelves colour
-% bar_coldata = zeros(length(jdir), 3);
-% 
-% iskeep = zeros(1,length(jdir));
-% 
-% shelf_names = strings;
-% 
-% dhdtave = mean(mean(f.dMdtadj(~isnan(f.dMdtadj))));
-% 
-% for i = 1:length(jdir)
-%     shelf = jdir(i).name;
-%     shelf = strrep(shelf,'.mat',''); %strip the .mat at the end
-%     shelf_names(i) = shelf;
-%     
-%     fname = strcat('../data/ice-shelves/major/' ,shelf, '.mat');
-%     g = load(fname);
-% 
-%     % restrict to this shelf
-%     ct_shelf = ct(g.IN); %only the points in this shelf
-%     h = f.H;
-%     hs = h(g.IN);
-%     coverage(i) = sum(sum(~isnan(ct_shelf)))/sum(sum(~isnan(hs))) * 100;
-% 
-%     aa = (ct_shelf(~isnan(ct_shelf))); %non nan points
-%     ct_ave(i) = median(aa(aa < 1e4));
-% 
-%     % compute the stuff to work out l
-%     m_shelf = f.m; m_shelf = m_shelf(g.IN); %only the points in this shelf
-%     h_shelf = f.H; h_shelf = h_shelf(g.IN);
-%     epsxx_shelf = f.eflow; epsxx_shelf = epsxx_shelf(g.IN);
-%     dhdt_shelf = f.dhdtadj; dhdt_shelf = dhdt_shelf(g.IN);
-%     idx =  (~isnan(h_shelf)) &  (m_shelf > 1e-6)  & (epsxx_shelf > 1e-6) &  (-dhdt_shelf > 1e-6) ; %points where we have point thickness,  melt rate > 0, strain > 0, thinning < 0
-%     idx_for_calc =  (~isnan(h_shelf)) &  (~isnan(m_shelf))  & (~isnan(epsxx_shelf)) &  (~isnan(-dhdt_shelf)); %points where we have data for 
-%     area_shelf(i) = length(h_shelf(~isnan(h_shelf))); %size in km^3 (grid size = 1e3 * 1e3)
-% 
-% 
-%     % plot point and add name
-%     shelf_total = area_shelf(i); %total number of points in shelf
-%     shelf_keep  = sum(idx_for_calc); %number of points with thickness data
-%     percov(i) = shelf_keep/shelf_total * 100;
-% 
-%     h_shelf = h_shelf(idx);
-%     m_shelf = m_shelf(idx); %arrays with points in particular shelf with both melt and thicknes
-%     m_ave = median((m_shelf));
-%     h_ave = median((h_shelf));
-%     l(i) = kappai / h_ave / m_ave;
-%     if (percov(i) > 50) || (shelf == "Thwaites")
-%         iskeep(i) = 1;
-%         levs = [-1.2, -1.5]; %%NB: check agrees w/ fig2!
-%         if l(i) > 10^(max(levs)) %cold shelves
-%             bar_coldata(i,:) = cold_col;
-%         else
-%             bar_coldata(i,:) = warm_col;
-% 
-%         end
-%         %count = count +1;
-%     end
-% 
-%     % compute the 'disappearance' timescale
-%     dtc(i) = abs(h_ave / dhdtave);
-% 
-% end
-% 
-% %% make bar map
-% figure(3); clf; 
-% lk = l(iskeep==1);
-% 
-% 
-% ct_avek = ct_ave(iskeep==1);
-% [~,I] = sort(ct_avek);
-% ct_avek = ct_avek(I); %put in order of increasing timesclae
-% ct_avek(ct_avek<10) = 11; %just so it appears
-% shelf_namesk = shelf_names(iskeep==1);
-% shelf_namesk = shelf_namesk(I);
-% 
-% 
-% bar_coldatak = bar_coldata(iskeep==1,:);
-% bar_coldatak = bar_coldatak(I,:);
-% 
-% b = bar(ct_avek);
-% b.FaceColor = 'flat';
-% xticks(1:length(shelf_namesk))
-% set(gca,'xticklabel',shelf_namesk)
-% shg
-% 
-% b.CData = bar_coldatak;
-% set(gca, 'YScale','linear')
-% 
-% %% repeat for the dimensionless timescale
-% figure(4); clf; 
-% lk = l(iskeep==1);
-% 
-% 
-% 
-% ct_avek = ct_ave(iskeep==1);
-% [~,I] = sort(ct_avek);
-% ct_avek = ct_avek(I); %put in order of increasing l
-% ct_avek(ct_avek<10) = 11; %just so it appears
-% 
-% dtck = dtc(iskeep == 1);
-% shelf_namesk = shelf_names(iskeep==1);
-% shelf_namesk = shelf_namesk(I);
-% 
-% 
-% bar_coldatak = bar_coldata(iskeep==1,:);
-% bar_coldatak = bar_coldatak(I,:);
-% 
-% b = bar(ct_avek./dtck);
-% b.FaceColor = 'flat';
-% xticks(1:length(shelf_namesk))
-% set(gca,'xticklabel',shelf_namesk)
-% shg
-% ylim([1e-3, 1e0])
-% b.CData = bar_coldatak;
-% set(gca, 'YScale','log')
+% load the data from figure 2
+fig2data = load('fig2_out.mat');
+
+% restrict only to those shelves we're keeping
+lk            = fig2data.ll(shelf_type~=0);
+hk            = fig2data.h_ave(shelf_type~=0);
+ct_avek       = fig2data.ct_ave(shelf_type~=0);
+shelf_typek   = fig2data.shelf_type(shelf_type~=0);
+shelf_countsk = fig2data.shelf_counts(shelf_type~=0);
+shelf_namesk  = fig2data.shelf_names(shelf_type~=0);
+bar_coldatak  = fig2data.shelf_cols(shelf_type~=0,:);
+
+
+% sort the data in increasing mean
+[~,I] = sort(ct_avek);
+lks = lk(I);
+shelf_namesks = shelf_namesk(I);
+shelf_countsks = shelf_countsk(I);
+bar_coldataks = bar_coldatak(I,:);
+shelf_typeks = shelf_typek(I);
+ct_aveks = ct_avek(I); 
+
+
+w = 0.4; %width of the dist
+for i = 1:length(shelf_typeks)
+
+    %get the data as array
+    counts = cell2mat(shelf_countsks(i));
+    counts(counts < 10) = 10; %make the plotting a bit nicer
+
+    %remove very long timescale pts
+    counts = counts(counts < 5*1e3);
+
+    %fit a kde to it
+    kde = fitdist(counts,'kernel');
+
+    %evaluate it
+    x = logspace(1,4);
+    y = pdf(kde,x);
+
+    %scale the pdf
+    y = y * w / max(y); 
+
+    % create fill array
+    cline = i; %centreline of distribution
+    xf = [cline + y, flip(cline - y)];
+    yf = [x,flip(x)];
+
+    %fill the data
+    fill(xf, yf, bar_coldataks(i,:), 'linewidth', 1)
+
+    % add mean as a point
+    plot(cline,mean(kde),'ko', 'markerfacecolor', 'k', 'markersize', 5)
+    %or maybe the point of 90 mass or so?
+%     [countsort,~] = sort(counts);
+%     frac = 0.75;
+%     idx = round(length(countsort)*frac); %index frac way along counts
+%     plot(cline, countsort(idx),'ko', 'markerfacecolor', 'k', 'markersize', 5)
+    
+
+
+end
+
+set(gca, 'YScale', 'log')
+
+fig = gcf;
+fig.Position(3:4) = [1000, 400];
+ax3 = gca; ax3.FontSize = 14;
+
+ax3.XLim = [0,length(shelf_namesk)+1];
+ax3.XTick = 1:length(shelf_countsks);
+ax3.XTickLabel = shelf_namesks;
+
