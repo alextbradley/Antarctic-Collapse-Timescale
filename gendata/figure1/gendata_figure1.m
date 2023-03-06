@@ -28,7 +28,7 @@ fnames = ["Ross","PineIsland"];
 nf = [24, 50]; %flowline number
 
 for i = 1:2
-    fname = strcat('../../data/ice-shelves/',fnames(i), '.mat');
+    fname = strcat('../../data/ice-shelves/all-shelves/',fnames(i), '.mat');
     f = load(fname);
 
     %get flowline data (all flowlines)
@@ -60,6 +60,7 @@ for i = 1:2
         ix/length(x) %for monitoring progress
     end
     Tflowline{i} = T_exp;
+    Tflowline_act{i} = T;
     xflowline{i} = xx;
     zflowline{i} = z;
     mflowline{i} = s.melt;
@@ -70,7 +71,7 @@ end %end loop over shelves
 
 %save
 if savedat
-save('figure1-data.mat', 'Tflowline', 'xflowline', 'zflowline', 'fnames', 'flc_all');
+save('figure1-data.mat', 'Tflowline','Tflowline_act',  'xflowline', 'zflowline', 'fnames', 'flc_all');
 end
 %% Generate inset data
 figure1ab_inset = struct;
