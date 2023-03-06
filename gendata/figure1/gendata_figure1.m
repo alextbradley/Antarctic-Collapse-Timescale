@@ -76,7 +76,7 @@ end
 %% Generate inset data
 figure1ab_inset = struct;
 for i = 1:2
-    fname = strcat('../../data/ice-shelves/',fnames(i), '.mat');
+    fname = strcat('../../data/ice-shelves/all-shelves/',fnames(i), '.mat');
     f = load(fname);
 
     %restrict to this shelf
