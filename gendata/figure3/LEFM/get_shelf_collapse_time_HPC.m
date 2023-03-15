@@ -33,7 +33,8 @@ Bs = f.B(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
 sz = size(hs);
 
 %% adhoc adjustments
-dhdts = -abs(dhdts);  
+%dhdts = -abs(dhdts);  
+dhdts = g.mean_dhdt;
 ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 
 %% determine tags

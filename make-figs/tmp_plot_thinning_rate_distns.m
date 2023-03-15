@@ -11,7 +11,7 @@ figure(3); clf; hold on;
 %
 
 % init storage
-jdir = dir('../data/ice-shelves/major/*.mat'); %where shelf files are stored
+jdir = dir('../data/ice-shelves/all-shelves/*.mat'); %where shelf files are stored
 
 %we'll also work out shelf by shelf collapse data here
 ff = load('figure3-data.mat');
@@ -36,7 +36,7 @@ ll = zeros(1,length(jdir)); %store the lengthscales l
 shelf_cols = zeros(length(jdir), 3);%store plot colours
 area_shelf = zeros(1,length(jdir)); %store shelf areas
 
-x = linspace(-2,6,2e3); 
+x = linspace(-2,10,2e3); 
 w = 0.3;
 
 
@@ -47,7 +47,7 @@ for i = 1:length(jdir)
     shelf = strrep(shelf,'.mat',''); %strip the .mat at the end
     shelf_names(i) = shelf;
     
-    fname = strcat('../data/ice-shelves/major/' ,shelf, '.mat');
+    fname = strcat('../data/ice-shelves/all-shelves/' ,shelf, '.mat');
     g = load(fname);
 
     % restrict data to those points in shelf with high enough melt rate
@@ -66,7 +66,7 @@ for i = 1:length(jdir)
 
     %dhdt_shelf = dhdt_shelf - err;
     relerr = err./dhdt_shelf;
-   dhdt_shelf(relerr > 1) = nan;
+  % dhdt_shelf(relerr > 1) = nan;
 
 
     idx =  (~isnan(h_shelf)) &  (m_shelf > 1e-6)  & (epsxx_shelf > 1e-6) &  (-dhdt_shelf > 1e-6) ; %points where we have point thickness,  melt rate > 0, strain > 0, thinning < 0
@@ -99,6 +99,7 @@ for i = 1:length(jdir)
     thinrate_ave(i) = median(thinrate_shelf);
 
 
+    if any(idx)
     %fit a kde to it
     kde = fitdist(thinrate_shelf,'kernel');
 
@@ -107,7 +108,8 @@ for i = 1:length(jdir)
 
     %compute mean
     %meanval = median(kde);%+std(kde)/2;
-    meanval = mean(kde); %+std(kde); %75th percentile
+    meanval = mean(kde)+std(kde); %75th percentile
+    mean_dhdt = meanval;
     %meanval = mean(thinrate_shelf);
 
     %scale the pdf
@@ -128,9 +130,11 @@ for i = 1:length(jdir)
 
     % add mean as a point
     plot(cline,meanval,'ko', 'markerfacecolor', 0*[1,1,1], 'markersize', 6,'LineWidth',1.1 )
-
-
-
+    else
+        mean_dhdt = nan; %
+    end
+    save(fname, 'mean_dhdt', '-append')
+    
       
 end %end loop over shelves
 
