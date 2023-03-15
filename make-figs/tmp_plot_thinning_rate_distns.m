@@ -109,7 +109,7 @@ for i = 1:length(jdir)
     %compute mean
     %meanval = median(kde);%+std(kde)/2;
     meanval = mean(kde)+std(kde); %75th percentile
-    mean_dhdt = meanval;
+    mean_dhdt = -meanval;
     %meanval = mean(thinrate_shelf);
 
     %scale the pdf
