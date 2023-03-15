@@ -3,7 +3,7 @@ function  collapse_time_row = get_collapse_time_row(row_H, row_dhdt, row_epsxx, 
 ny = length(row_H);
 collapse_time_row = nan(1,ny);
 for iy = 1:ny
-    if row_tags(iy) == 6 
+    if ((row_tags(iy) == 6) || (row_tags(iy)==4) || (row_tags(iy) == 2))
         %set up the parameters
         pp = struct;
 
@@ -38,10 +38,25 @@ for iy = 1:ny
 
         %iy
         nt = 100; %number of trial time output points
-        collapse_time_row(iy) = get_collapse_time_advect(pp, nt, tmax);
+        if row_tags(iy) == 6 %have all data
+            collapse_time_row(iy) = get_collapse_time_advect(pp, nt, tmax);
+        elseif row_tags(iy) == 4 %thickening - check if collapse at time zero
+            TgfF = get_grounding_line_temp(pp.ghf, pp.Ts, pp.H0);
+            anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution
+            dimless_crev_depth = get_dimless_crev_depth(pp, anonT); %time zero crevasse depth
+            if dimless_crev_depth > 0.99
+                collapse_time_row(iy) = 0;
+            else
+                collapse_time_row(iy) = inf;
+            end
+        elseif row_tags(iy) == 2
+            collapse_time_row(iy) = inf;
+        end
 
 
         %fprintf('Completed %.3f percent of collase time points in square \n', count*100/ sum(sum(tags==6)))
         %toc
+
     end
+
 end
