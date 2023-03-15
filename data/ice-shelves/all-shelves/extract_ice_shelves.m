@@ -1,6 +1,6 @@
 % Generate indices and lengthscales for some ice shelves
 
-fname = 'AbbotAdjacent'; %name of the ice shelf
+fname = 'SulzbergerSwinburne'; %name of the ice shelf
 %f = load('../ice_sheet_data.mat');
 %%
 %f  = load('../ice_sheet_data.mat')
