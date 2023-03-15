@@ -26,7 +26,7 @@ for i = 1:sz(1)
 end
 
 %% make (a), (b)
-load('figure1-data.mat')
+load('../gendata/figure1/figure1-data.mat')
 cmap = cmocean('thermal',100);
 cmap = cmap(1:end-10,:);
 

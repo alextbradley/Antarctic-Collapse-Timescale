@@ -9,6 +9,7 @@
 %% Preliminaries
 %clear
 addpath('../functions');
+saveout = 0; %flag to specify saving output. (Need output from this script to run figure3 and 4 scripts)
 %f = load('../data/ice_sheet_data.mat');
 fig = figure(1);clf
 positions = [0.05, 0.12, 0.39, 0.83;
@@ -39,7 +40,7 @@ cold_col = [0, 63, 203]/255; %cold shelves colour
 % Make the contour map
 %
 kappai = 36; %thermal diffusivity
-H = linspace(100,800,100); %ice thicknesses
+H = linspace(50,800,100); %ice thicknesses
 mdot = logspace(-1,log10(20),100);
 [HH,mm] = meshgrid(H,mdot);
 ell = kappai ./ HH ./ mm;
@@ -68,10 +69,10 @@ cc.Label.FontSize = 15;
 cc.Position(1) = 0.45;
 
 % sort out limits
-xl = [99,800];
+xl = [50,800];
 yl = 10.^[min(log10(mdot)),max(log10(mdot))]; %x and y lims of plot
 ax(1).XTick = (0:200:800);
-ax(1).XLim = [xl(1)-1, xl(2)];
+ax(1).XLim = [xl(1)-2, xl(2)];
 ax(1).YLim = [yl(1), yl(2)+0.1];
 box(ax(1), 'on')
 
@@ -95,6 +96,7 @@ jdir = dir('../data/ice-shelves/major/*.mat'); %where shelf files are stored
 %we'll also work out shelf by shelf collapse data here
 ff = load('figure3-data.mat');
 ct = ff.collapse_time; %collapse time data
+ct_Nye = ff.collapse_time_Nye;
 tags = ff.tags;
 
 %initialize storage
@@ -108,7 +110,8 @@ shelf_type = zeros(1,length(jdir)); %flags for keeping the shelf or not (0), col
 epsxx_ave = zeros(1,length(jdir));
 thinrate_ave = zeros(1,length(jdir));
 shelf_counts = cell(1,length(jdir)); %for storing individual shelf counts
-ct_ave = zeros(1,length(jdir)); %these are the mean values of the collapse time
+ct_ave = zeros(1,length(jdir)); %mean values of the collapse time for LEFM
+ct_ave_Nye = zeros(1,length(jdir)); %mean values of the collapse time for Nye
 ll = zeros(1,length(jdir)); %store the lengthscales l
 shelf_cols = zeros(length(jdir), 3);%store plot colours
 area_shelf = zeros(1,length(jdir)); %store shelf areas
@@ -157,6 +160,7 @@ for i = 1:length(jdir)
 
     % compute the collagse time for this shelf 
     ct_shelf = ct(g.IN); %only the points in this shelf
+    ct_Nye_shelf = ct_Nye(g.IN);
     h = f.H;
     hs = h(g.IN);
     collapse_coverage(i) = sum(sum(~isnan(ct_shelf)))/sum(sum(~isnan(hs))) * 100; %number of points with non nan collapse time
@@ -165,15 +169,26 @@ for i = 1:length(jdir)
     aa = (ct_shelf(~isnan(ct_shelf))); %all non nan points in shelf
     shelf_counts{i} = aa;
     if ~isempty(aa)
-        pd = fitdist(aa,'kernel');
+        ii = aa < 9*1e3; fprintf('percentage of points retained after removing outliers is %.3f\n', sum(ii)/length(aa)*100);
+        aar = aa(aa < 9*1e3); %remove very long points
+        pd = fitdist(aar,'kernel');
         ct_ave(i) = mean(pd);
     end
     
+    %compute mean for Nye
+    aa = (ct_Nye_shelf(~isnan(ct_Nye_shelf))); %all non nan points in shelf
+    if ~isempty(aa)
+        aar = aa(aa < 9*1e3); %remove very long points
+        pd = fitdist(aar,'kernel');
+        ct_ave_Nye(i) = mean(pd);
+    end
+    
+
 
     % plot point and add name
     shelf_keep  = sum(idx_for_calc); %number of points with thickness data
     percov(i) = shelf_keep/area_shelf(i) * 100;
-    threshold_keep = 50;
+    threshold_keep = 40;
     l = kappai / h_ave(i) / m_ave(i);
     ll(i) = l;
     if (percov(i) > threshold_keep) || shelf == "Thwaites" %only plot if > threshold% coverage
@@ -256,5 +271,6 @@ end
 
 
 %% save this data for use in figures 3 and 4
-save('fig2_out.mat', 'shelf_names', 'shelf_type', 'shelf_cols','ll', 'h_ave', 'ct_ave',"shelf_counts")
-
+if saveout
+    save('fig2_out_.mat', 'shelf_names', 'shelf_type', 'shelf_cols','ll', 'h_ave', 'ct_ave',"shelf_counts", "ct_ave_Nye")
+end
