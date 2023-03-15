@@ -21,6 +21,7 @@ tags = nan(size(f.m));
 tags = 6*ones(size(f.m));
 tags(f.dhdtadj > 0) = 4;
 tags(f.eflow < 0) = 3;
+
 tags(isnan(f.m) | isnan(f.dhdtadj) | isnan(f.eflow)) = 2;
 tags(isnan(f.H)) = 1;
 
