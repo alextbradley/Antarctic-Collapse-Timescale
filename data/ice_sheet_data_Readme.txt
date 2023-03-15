@@ -23,6 +23,7 @@ dhdtadj: unit [m/yr] thinning rate 'dhdt' from Smith et al. 2020 (doi: 10.1126/s
                      WAIS section replaced by more complete data provided by B. Smith (pers comm).
 dmdt: unit [m/yr] thinning rate 'dmdt' from Smith et al. 2020 including firn-air correction. 
 dmdtadj: unit [m/yr] thinning rate 'dmdt' from Smith et al. 2020 including firn-air correction with ad-hoc WAIS correction. 
+dmdterr: unit [m/yr] RMSE dmdt error from Smith et al. 2020.
 
 MOA2009_1km: unit [NaN] satellite image
 bb0448974g_2_1.h5
