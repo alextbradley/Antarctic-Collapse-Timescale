@@ -6,7 +6,7 @@ function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(s
 % return the collapse time for the shelf inputted
 poolobj = gcp('nocreate');
 if ~isempty(poolobj);  delete(poolobj); end
-num_cpu=32;
+num_cpu=56;
 poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
@@ -50,9 +50,9 @@ tags = 6*ones(size(ms));
 
 tags(dhdts > 0) = 4;
 tags(strains < 0) = 3;
-tags(isnan(ms) | isnan(dhdts) | isnan(strains)) = 2;
+%tags(isnan(ms) | isnan(dhdts) | isnan(strains)) = 2;
+tags(isnan(ms) | isnan(strains)) = 2;
 tags(isnan(hs)) = 1;
-
 %% Constant quantities
 %constant parameters
 Tb    = -2 + 273.15;     %basal temperature (kelvin)
@@ -80,8 +80,8 @@ pp.ghf = ghf;
 
 collapse_time_square = nan(size(ms));
 %tic
-tmax = 1e4; %max time
-dt = 5; %timestep
+tmax = 5*1e4; %max time
+dt = 1; %timestep
 parfor ix =  1:sz(1)
 %for ix = 1:length(xs)
 

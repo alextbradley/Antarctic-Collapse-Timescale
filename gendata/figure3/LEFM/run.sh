@@ -6,10 +6,8 @@
 ##SBATCH --time=00:20:00         # adjust this to match the walltime of your job
 #SBATCH --nodes=1      
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32     # adjust this if you are using parallel commands
+#SBATCH --cpus-per-task=56     # adjust this if you are using parallel commands
 
 module load hpc/matlab
-FNAME="circum_Antarctic_collapse_time($NR,$NROW)"
-echo $FNAME
-matlab -nosplash -nodisplay -r $FNAME
+matlab -nosplash -nodisplay -r run_get_shelf_collapse_time_HPC
 
