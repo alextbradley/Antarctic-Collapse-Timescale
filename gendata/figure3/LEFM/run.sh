@@ -8,6 +8,5 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=56     # adjust this if you are using parallel commands
 
-module load hpc/matlab
 matlab -nosplash -nodisplay -r run_get_shelf_collapse_time_HPC
 
