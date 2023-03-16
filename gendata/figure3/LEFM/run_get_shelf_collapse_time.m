@@ -1,10 +1,10 @@
 % launch simulations for circum Antarctic. This code produces individual
 % collapse files, held within directory indexed by 'step'
 
-jdir = dir('../../../data/ice-shelves/major/*.mat');
+jdir = dir('../../../data/ice-shelves/all-shelves/*.mat');
 
 tic
-for i = 1:length(jdir)
+for i = 24:length(jdir)
     shelf_name = strrep(jdir(i).name,'.mat','');
     step = 8;
     if ~(jdir(i).name == "NonClassifiedShelves.mat") %don't run on non-classified, for which code not yet set up right!
