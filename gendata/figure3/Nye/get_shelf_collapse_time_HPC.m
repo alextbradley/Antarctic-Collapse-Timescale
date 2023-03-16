@@ -1,4 +1,4 @@
-function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(shelf_name, step)
+function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time_HPC(shelf_name, step)
 %return the collapse time (as part of the larger array -- collapse time
 %square is the sub-array) for the shelf specified by shelf_name. Step is
 %the step in the grid resolution (integer, set to 1 for whole grid)
@@ -33,7 +33,8 @@ Bs = f.B(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
 sz = size(hs);
 
 %% adhoc adjustments
-dhdts = -abs(dhdts);  
+%dhdts = -abs(dhdts); 
+dhdts(:) = g.mean_dhdt;
 ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 
 %% determine tags
@@ -79,8 +80,8 @@ pp.ghf = ghf;
 
 collapse_time_square = nan(size(ms));
 %tic
-tmax = 1e4; %max time
-dt = 5; %timestep
+tmax = 5e4; %max time
+dt = 1; %timestep
 parfor ix =  1:sz(1)
 %for ix = 1:length(xs)
 
