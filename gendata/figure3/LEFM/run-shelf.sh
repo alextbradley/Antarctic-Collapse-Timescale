@@ -8,6 +8,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32     # adjust this if you are using parallel commands
 
-FNAME="runsim_shelf_hpc('$SHELF',$STEP)"
+module load hpc/matlab
+FNAME="runsim_shelf_hpc($SHELFNO,$STEP)"
 echo $FNAME
 matlab -nosplash -nodisplay -r $FNAME

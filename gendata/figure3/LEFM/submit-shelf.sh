@@ -1,21 +1,19 @@
 #!/bin/bash 
 
 #loop over shelves
-#declare -a arr=("PineIslandFast" "Thwaites" "Amery")
-declare -a arr=("PineIslandFast")
 
-STEP=8
-for SHELF in "${arr[@]}"
+STEP=1
+for SHELFNO in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42
 do
-   echo "$SHELF"
+   echo "$SHELFNO"
    #for each one, submit a job 
 
-   JOBNO="CT_$SHELF-$STEP"
-   OUTNAME="CT_$SHELF-$STEP.out"
+   JOBNO="CT_$SHELFNO-$STEP"
+   OUTNAME="CT_$SHELFNO-$STEP.out"
    echo $JOBNO
    sbatch -J $JOBNO \
 	  --output=$OUTNAME \
-	  --export JOBNO=$JOBNO,SHELF=$SHELF,STEP=$STEP \
+	  --export JOBNO=$JOBNO,SHELFNO=$SHELFNO,STEP=$STEP \
 	  ./run-shelf.sh
 done
 

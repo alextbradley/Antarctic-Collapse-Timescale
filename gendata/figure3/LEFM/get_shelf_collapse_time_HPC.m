@@ -6,7 +6,7 @@ function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time_H
 % return the collapse time for the shelf inputted
 poolobj = gcp('nocreate');
 if ~isempty(poolobj);  delete(poolobj); end
-num_cpu=32;
+num_cpu=24;
 poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
