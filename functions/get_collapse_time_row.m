@@ -3,7 +3,7 @@ function  collapse_time_row = get_collapse_time_row(row_H, row_dhdt, row_epsxx, 
 ny = length(row_H);
 collapse_time_row = nan(1,ny);
 for iy = 1:ny
-    if ((row_tags(iy) == 6) || (row_tags(iy)==4) || (row_tags(iy) == 2))
+    if ((row_tags(iy) == 6) || (row_tags(iy)==4) || (row_tags(iy) == 3))
         %set up the parameters
         pp = struct;
 
@@ -49,7 +49,7 @@ for iy = 1:ny
             else
                 collapse_time_row(iy) = inf;
             end
-        elseif row_tags(iy) == 2
+        elseif row_tags(iy) == 3
             collapse_time_row(iy) = inf;
         end
 
