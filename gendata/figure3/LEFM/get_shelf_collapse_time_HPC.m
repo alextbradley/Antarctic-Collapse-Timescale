@@ -1,4 +1,4 @@
-function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(shelf_name, step)
+function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time_HPC(shelf_name, step)
 %return the collapse time (as part of the larger array -- collapse time
 %square is the sub-array) for the shelf specified by shelf_name. Step is
 %the step in the grid resolution (integer, set to 1 for whole grid)
