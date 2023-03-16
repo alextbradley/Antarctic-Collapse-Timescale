@@ -37,9 +37,8 @@ for iy = 1:ny
         tmax = row_tmax(iy);
 
         %iy
-        nt = 100; %number of trial time output points
         if row_tags(iy) == 6 %have all data
-            collapse_time_row(iy) = get_collapse_time_advect(pp, nt, tmax);
+            collapse_time_row(iy) = get_collapse_time_advect(pp, dt, tmax);
         elseif row_tags(iy) == 4 %thickening - check if collapse at time zero
             TgfF = get_grounding_line_temp(pp.ghf, pp.Ts, pp.H0);
             anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution
