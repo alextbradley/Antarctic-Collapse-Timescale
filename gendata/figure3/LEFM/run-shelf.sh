@@ -10,4 +10,4 @@
 
 FNAME="circum_Antarctic_collapse_time($SHELF,$STEP)"
 echo $FNAME
-#matlab -nosplash -nodisplay -r $FNAME
+matlab -nosplash -nodisplay -r $FNAME
