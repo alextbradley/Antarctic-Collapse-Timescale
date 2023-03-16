@@ -27,7 +27,7 @@ cmap = cmocean('matter', 100);
 cmap = flipud(cmap(1:end-60,:));
 colormap(ax(1) ,cmap)
 
-cmap = flipud(cmocean('balance', 100));%cmap = cmap(1:end-10,:);
+cmap = flipud(cmocean('balance', 100)); cmap = cmap(20:end-20,:);
 %cmap = flipud(cmocean('matter', 100)); %cmap = cmap(10:end,:);
 colormap(ax(1), cmap);
 
@@ -40,16 +40,16 @@ cold_col = [0, 63, 203]/255; %cold shelves colour
 % Make the contour map
 %
 kappai = 36; %thermal diffusivity
-H = linspace(50,800,100); %ice thicknesses
-mdot = logspace(-1,log10(20),100);
+H = linspace(50,1000,100); %ice thicknesses
+mdot = logspace(-1.5,log10(20),100);
 [HH,mm] = meshgrid(H,mdot);
 ell = kappai ./ HH ./ mm;
 
 % contour plot
 subplot('Position', positions(1,:))
-%contourf(H, mdot, log10(ell), 100, 'linestyle', 'none');
-pl= imagesc(H,mdot, log10(ell)); 
-set(pl, 'AlphaData', 0.9*ones(size(ell)))
+contourf(H, mdot, log10(ell), 100, 'linestyle', 'none');
+%pl= imagesc(H,mdot, log10(ell)); 
+%set(pl, 'AlphaData', 0.9*ones(size(ell)))
 set(ax(1), 'YDir', 'normal');
 set(ax(1), 'YScale', 'log');
 
@@ -69,9 +69,9 @@ cc.Label.FontSize = 15;
 cc.Position(1) = 0.45;
 
 % sort out limits
-xl = [50,800];
+xl = [50,1000];
 yl = 10.^[min(log10(mdot)),max(log10(mdot))]; %x and y lims of plot
-ax(1).XTick = (0:200:800);
+ax(1).XTick = (0:200:1000);
 ax(1).XLim = [xl(1)-2, xl(2)];
 ax(1).YLim = [yl(1), yl(2)+0.1];
 box(ax(1), 'on')
@@ -80,7 +80,7 @@ box(ax(1), 'on')
 % add contours
 %
 hold on
-levs = [-1.2, -1.5];
+levs = [-1.1, -1.5];
 for i = 1:length(levs)
 contour(H, mdot, log10(ell), levs(i)*[1,1], 'LineStyle','--', 'Color', 0.5*[1,1,1], 'LineWidth', 2);
 end
@@ -94,22 +94,24 @@ end
 jdir = dir('../data/ice-shelves/major/*.mat'); %where shelf files are stored
 
 %we'll also work out shelf by shelf collapse data here
-ff = load('figure3-data.mat');
-ct = ff.collapse_time; %collapse time data
-ct_Nye = ff.collapse_time_Nye;
-tags = ff.tags;
+fig3data = load('figure3-data.mat');
+ct = fig3data.collapse_time; %collapse time data
+ct_Nye = fig3data.collapse_time_Nye;
+tags = fig3data.tags;
 
 %initialize storage
 m_ave = zeros(1,length(jdir));
 h_ave = zeros(1,length(jdir));
-mstd = zeros(1,length(jdir));
-hstd = zeros(1,length(jdir));
-percov = zeros(1,length(jdir)); %store the % coverage of input data
-collapse_coverage  =  zeros(1,length(jdir)); %per of points with non-nan output
-shelf_type = zeros(1,length(jdir)); %flags for keeping the shelf or not (0), cold (1), warm (2)
 epsxx_ave = zeros(1,length(jdir));
 thinrate_ave = zeros(1,length(jdir));
-shelf_counts = cell(1,length(jdir)); %for storing individual shelf counts
+
+
+percov = zeros(1,length(jdir)); %store the % coverage of input data
+collapse_coverage  =zeros(1,length(jdir)); %percentage of points with non-nan or non-inf output
+shelf_type = zeros(1,length(jdir)); %flags for keeping the shelf or not (0), cold (1), warm (2)
+
+shelf_counts = cell(1,length(jdir)); %for storing individual shelf counts for collapse time
+
 ct_ave = zeros(1,length(jdir)); %mean values of the collapse time for LEFM
 ct_ave_Nye = zeros(1,length(jdir)); %mean values of the collapse time for Nye
 ll = zeros(1,length(jdir)); %store the lengthscales l
@@ -120,75 +122,70 @@ area_shelf = zeros(1,length(jdir)); %store shelf areas
 % loop over shelves
 shelf_names = strings;
 for i = 1:length(jdir)
+    %load data for this shelf
     shelf = jdir(i).name;
     shelf = strrep(shelf,'.mat',''); %strip the .mat at the end
     shelf_names(i) = shelf;
-    
     fname = strcat('../data/ice-shelves/major/' ,shelf, '.mat');
     g = load(fname);
 
-    % restrict data to those points in shelf with high enough melt rate
-    m_shelf = f.m; m_shelf = m_shelf(g.IN); %only the points in this shelf
-    h_shelf = f.H; h_shelf = h_shelf(g.IN);
-    epsxx_shelf = f.eflow; epsxx_shelf = epsxx_shelf(g.IN);
-    dhdt_shelf = f.dhdtadj; dhdt_shelf = dhdt_shelf(g.IN);
-    idx =  (~isnan(h_shelf)) &  (m_shelf > 1e-6)  & (epsxx_shelf > 1e-6) &  (-dhdt_shelf > 1e-6) ; %points where we have point thickness,  melt rate > 0, strain > 0, thinning < 0
-    %idx =  (~isnan(h_iceshelf)) &  (~isnan(m_iceshelf)); %points where we have point thickness and melt rate > 0
-    idx_for_calc =  (~isnan(h_shelf)) &  (~isnan(m_shelf))  & (~isnan(epsxx_shelf)) &  (~isnan(-dhdt_shelf)); %points where we have data for 
+    % restrict data to those points in shelf
+    m_shelf = f.m; 
+    m_shelf = m_shelf(g.IN); %only the points in this shelf
+    m_shelf(m_shelf < 0) = 0; %add hoc adjustment
+    h_shelf = f.H; 
+    h_shelf = h_shelf(g.IN);
+    epsxx_shelf = f.eflow; 
+    epsxx_shelf = epsxx_shelf(g.IN);
+
+    %restrict to where we have data
+    idx =  (~isnan(h_shelf)) &  (~isnan(m_shelf))  & (~isnan(epsxx_shelf)); %points where we have data for melt, thichkness and strain rate
+    h_shelf = h_shelf(idx);
+    m_shelf = m_shelf(idx); %arrays with points in particular shelf with both melt and thicknes
+    epsxx_shelf = epsxx_shelf(idx);
 
     %compute the shelf area as a sanity check?
     area_shelf(i) = length(h_shelf(~isnan(h_shelf))); %size in km^3 (grid size = 1e3 * 1e3)
 
-    %get data points which satisfy the idx criterion
-    h_shelf = h_shelf(idx);
-    m_shelf = m_shelf(idx); %arrays with points in particular shelf with both melt and thicknes
-    epsxx_shelf = epsxx_shelf(idx);
-    thinrate_shelf = -dhdt_shelf(idx);
-
-
-    %compute averages of strain, thickness, melt, thining rate
-%     
-%     pd = fitdist(m_shelf,'kernel');  m_ave(i) = mean(pd);
-%     pd = fitdist(h_shelf,'kernel');  h_ave(i) = mean(pd);
-%     pd = fitdist(epsxx_shelf,'kernel');  epsxx_ave(i) = mean(pd);
-%     pd = fitdist(thinrate_shelf,'kernel');   thinrate_ave(i) = mean(pd);
-    
+    %get means of 
     m_ave(i) = median((m_shelf));
     h_ave(i) = median((h_shelf));
     epsxx_ave(i) = median(epsxx_shelf);
-    thinrate_ave(i) = median(thinrate_shelf);
+    thinrate_ave(i) = g.mean_dhdt;  %set the thinning rate to pre-determined value
 
-    % compute the collagse time for this shelf 
+    % compute the collapse time for this shelf 
     ct_shelf = ct(g.IN); %only the points in this shelf
-    ct_Nye_shelf = ct_Nye(g.IN);
+    ct_keep = (ct_shelf(~isnan(ct_shelf))); %all non nan and non infpoints in shelf
+    ct_keep = ct_keep(~isinf(ct_keep));
+    ct_keep = ct_keep(ct_keep < 5e4); %remove very long points
+
+    shelf_counts{i} = ct_keep;
+    if ~isempty(ct_keep)
+        pd = fitdist(ct_keep,'kernel');
+        ct_ave(i) = mean(pd);
+    end
+
+    %compute collapse coverage
     h = f.H;
     hs = h(g.IN);
     collapse_coverage(i) = sum(sum(~isnan(ct_shelf)))/sum(sum(~isnan(hs))) * 100; %number of points with non nan collapse time
 
-    %compute the mean of this distribution
-    aa = (ct_shelf(~isnan(ct_shelf))); %all non nan points in shelf
-    shelf_counts{i} = aa;
-    if ~isempty(aa)
-        ii = aa < 9*1e3; fprintf('percentage of points retained after removing outliers is %.3f\n', sum(ii)/length(aa)*100);
-        aar = aa(aa < 9*1e3); %remove very long points
-        pd = fitdist(aar,'kernel');
-        ct_ave(i) = mean(pd);
-    end
     
     %compute mean for Nye
-    aa = (ct_Nye_shelf(~isnan(ct_Nye_shelf))); %all non nan points in shelf
-    if ~isempty(aa)
-        aar = aa(aa < 9*1e3); %remove very long points
-        pd = fitdist(aar,'kernel');
+    ct_Nye_shelf = ct_Nye(g.IN);
+    ct_Nye_keep = (ct_Nye_shelf(~isnan(ct_Nye_shelf))); %all non nan points in shelf
+    ct_Nye_keep = ct_Nye_keep(~isinf(ct_Nye_keep));
+
+    if ~isempty(ct_Nye_keep)
+        pd = fitdist(ct_Nye_keep,'kernel');
         ct_ave_Nye(i) = mean(pd);
     end
     
 
-
     % plot point and add name
     shelf_keep  = sum(idx_for_calc); %number of points with thickness data
     percov(i) = shelf_keep/area_shelf(i) * 100;
-    threshold_keep = 40;
+    threshold_keep = 0;
     l = kappai / h_ave(i) / m_ave(i);
     ll(i) = l;
     if (percov(i) > threshold_keep) || shelf == "Thwaites" %only plot if > threshold% coverage
@@ -230,7 +227,7 @@ idx = shelf_type > 0;
 ls = sum(idx);
 
 %plot setup
-ms = 40; %markersize
+ms = 50; %markersize
 ax(2).XLabel.String = '$\ell$'; ax(2).XLabel.Interpreter = 'latex';
 ax(2).YLabel.String= 'strain rate (1/yr)';
 ax(2).ZLabel.String = 'inverse thinning rate (yr/m)';
@@ -240,22 +237,22 @@ set(ax(2), 'ZScale', 'log')
 ax(2).View = [45,36];
 grid(ax(2), 'on')
 ax(2).XLim = [0.0058    1.0];
-ax(2).YLim = [8e-5    0.0140];
+ax(2).YLim = [8e-5    0.0060];
 ax(2).ZLim = 1./flip([ 0.0361   10.0000]);
 ax(2).ZLim = [0.15,40];
  hold(ax(2), 'on');
  box(ax(2), 'on')
-
+lw = 1;
 
 %project onto the l axis
-scatter3(ax(2),min(ax(2).XLim)*ones(1,ls), epsxx_ave(idx),1./thinrate_ave(idx),ms, shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k');
+scatter3(ax(2),min(ax(2).XLim)*ones(1,ls), epsxx_ave(idx),1./thinrate_ave(idx),ms, shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k', 'linewidth', lw);
 
 % project onto the epsxx axis
-scatter3(ax(2), ell_ave(idx), max(ax(2).YLim)*ones(1,ls),1./thinrate_ave(idx),ms, shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k');
+scatter3(ax(2), ell_ave(idx), max(ax(2).YLim)*ones(1,ls),1./thinrate_ave(idx),ms, shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k', 'linewidth', lw);
 
 %project onto the thinning rate axis
-scatter3(ax(2), ell_ave(idx),  epsxx_ave(idx) ,min(ax(2).ZLim)*ones(1,ls),ms,shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k');
-
+scatter3(ax(2), ell_ave(idx),  epsxx_ave(idx) ,min(ax(2).ZLim)*ones(1,ls),ms,shelf_cols(idx,:), 'Filled', 'MarkerEdgeColor','k', 'linewidth', lw);
+shg
 
 
 %% final tidying
