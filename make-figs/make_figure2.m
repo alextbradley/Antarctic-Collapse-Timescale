@@ -34,7 +34,7 @@ colormap(ax(1), cmap);
 
 warm_col = [203,0,63]/255; %warm shelves colour
 cold_col = [0, 63, 203]/255; %cold shelves colour
-%% Figure 2a
+%% Make panel a
 
 %
 % Make the contour map
@@ -222,7 +222,7 @@ for i = 1:length(jdir)
 end %end loop over shelves
 
 
-%% Make (b)
+%% Make panel b
 
 ell_ave = kappai./ h_ave ./m_ave; %mean of the lengthscales
 idx = shelf_type > 0;
@@ -259,7 +259,7 @@ scatter3(ax(2), ell_ave(idx),  epsxx_ave(idx) ,min(ax(2).ZLim)*ones(1,ls),ms,she
 shg
 
 
-%% final tidying
+%% Final tidying
 for i = 1:2
     ax(i).FontSize = fs;
     ax(i).XLabel.FontSize = fs+2;
@@ -271,8 +271,9 @@ end
 
 
 
-%% save this data for use in figures 3 and 4
+%% Save data for use in figures 3 and 4
 if saveout
     save('fig2_out_.mat', 'shelf_names', 'shelf_type', 'shelf_cols','ll', 'h_ave', 'ct_ave',"shelf_counts", "ct_ave_Nye", "m_ave", 'thinrate_ave', "epsxx_ave")
 end
+
 
