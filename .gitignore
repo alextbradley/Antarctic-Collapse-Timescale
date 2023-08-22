@@ -12,3 +12,4 @@ make-presentation-figs/figures/*.pdf
 *.fig
 make-presentation-figs/profiling/* 
 *.DS_Store
+*.pdf

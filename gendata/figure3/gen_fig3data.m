@@ -9,8 +9,13 @@ collapse_time = nan(4401,5301);
 for i = 1:length(jdir)
     data = load(strcat('./LEFM/step_1/', jdir(i).name)); %load data for this shelf
     
-    %fill in the matrix
-    idx = ~isnan(data.collapse_time);
+    % get the in points 
+    shelf_info = load(strcat('../../data/ice-shelves/all-shelves/', data.shelf_name, '.mat'));
+    
+    %fill in the matrix 
+    idx = ~isnan(data.collapse_time) & shelf_info.IN;
+
+
     collapse_time(idx) = data.collapse_time(idx);
 end
 

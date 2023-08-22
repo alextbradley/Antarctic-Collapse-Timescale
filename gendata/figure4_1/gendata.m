@@ -13,7 +13,7 @@ for iM = 1:length(dMs)
     for is = 1:length(shelf_names)
         shelf = shelf_names(is);
      
-        % run the bisection for this shelf and this value\d_m = guess;
+        % run the bisection for this shelf and this value d_m = guess;
         s_epsxx = 1.7127e-04;
         s_dhdt = -0.0836;     %circum Antarctic collapse co-efficients
         d_m = dM;
