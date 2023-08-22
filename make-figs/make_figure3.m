@@ -5,7 +5,7 @@
 % ATB (aleey@bas.ac.uk), 17/02/2023. MIT Licence.
 %
 % (figure made as three individual figures). NB: need to run figure2 first
-% to get the statistics for (c).
+% to get the statistics for (b).
 %% Preliminaries
 %clear
 addpath('../functions');
@@ -33,7 +33,8 @@ map = interp1(x/255,T,linspace(0,1,255));
 %cmap = map;
 
 %% Part (a)
-figure(1);clf
+fig1 = figure(1);clf;
+fig1.Position(3:4) = [900, 900];
 ff = load('figure3-data.mat');
 ct = ff.collapse_time; %collapse time data
 tags = ff.tags;
@@ -55,6 +56,9 @@ c.Position(1) = 0.9; %move out of the way
 c.Ticks = 0:4;
 c.FontSize = 14;
 c.TickLabels = {'10^0', '10^1', '10^2', '10^3', '10^4'};
+c.Position(4) = 0.4;
+c.Position(2) = 0.4;
+c.Position(3) = 0.01;
 %colorbar(ax);
 
 
@@ -138,13 +142,15 @@ for i = 1:length(shelf_typeks)
     %get the data as array
     counts = cell2mat(shelf_countsks(i));
     counts(counts == 0) = 1; %make the plotting a bit nicer
-    counts = counts(counts < 5e4); %remove very long 
+    %counts = counts(counts < 5e4); %remove very long (this is done by the
+    %make figure2 script)
 
     %fit a kde to it
+    if ~isempty(counts)
     kde = fitdist(counts,'kernel');
 
     %evaluate it
-    x = logspace(0,4.1);
+    x = logspace(0,5, 5e2);
     y = pdf(kde,x);
 
     %scale the pdf
@@ -164,7 +170,7 @@ for i = 1:length(shelf_typeks)
     % add the Nye result
     plot(cline,ct_ave_Nye_ks(i),'ko','marker','o' ,'markerfacecolor',  1*[1,1,1], 'markersize', 6, 'LineWidth',1.1 )
 
-
+    end
 end
 
 set(gca, 'YScale', 'log')
@@ -176,7 +182,7 @@ ax3 = gca; ax3.FontSize = 14;
 shelf_namesks(shelf_namesks ==  "PopeSmithKohler") = "PSK";
 shelf_namesks(shelf_namesks ==  "SwinburneSulzbergerNickerson") = "SSN";
 ax3.XLim = [0,length(shelf_namesk)+1];
-ax3.YLim = [10^0,10^4];
+ax3.YLim = [10^0,4*10^4];
 ax3.XTick = 1:length(shelf_countsks);
 ax3.XTickLabel = shelf_namesks;
 ax3.XTickLabelRotation = 45;

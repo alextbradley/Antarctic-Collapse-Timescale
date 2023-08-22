@@ -7,10 +7,10 @@
 %
 % 17/02/23, ATB (aleey@bas.ac.uk), MIT licence
 %% Preliminaries
-%clear
+clear
 addpath('../functions');
-saveout = 0; %flag to specify saving output. (Need output from this script to run figure3 and 4 scripts)
-%f = load('../data/ice_sheet_data.mat');
+saveout = 1; %flag to specify saving output. (Need output from this script to run figure3 and 4 scripts)
+f = load('../data/ice_sheet_data.mat');
 fig = figure(1);clf
 positions = [0.05, 0.12, 0.39, 0.83;
              0.58, 0.12, 0.38, 0.83];
@@ -47,8 +47,8 @@ ell = kappai ./ HH ./ mm;
 
 % contour plot
 subplot('Position', positions(1,:))
-contourf(H, mdot, log10(ell), 100, 'linestyle', 'none');
-%pl= imagesc(H,mdot, log10(ell)); 
+%contourf(H, mdot, log10(ell), 100, 'linestyle', 'none');
+pl= imagesc(H,mdot, log10(ell)); 
 %set(pl, 'AlphaData', 0.9*ones(size(ell)))
 set(ax(1), 'YDir', 'normal');
 set(ax(1), 'YScale', 'log');
@@ -143,6 +143,7 @@ for i = 1:length(jdir)
     h_shelf = h_shelf(idx);
     m_shelf = m_shelf(idx); %arrays with points in particular shelf with both melt and thicknes
     epsxx_shelf = epsxx_shelf(idx);
+    epsxx_shelf = epsxx_shelf(epsxx_shelf > 0); % keep only positive strain rates
 
     %compute the shelf area as a sanity check?
     area_shelf(i) = length(h_shelf(~isnan(h_shelf))); %size in km^3 (grid size = 1e3 * 1e3)
@@ -175,6 +176,7 @@ for i = 1:length(jdir)
     ct_Nye_shelf = ct_Nye(g.IN);
     ct_Nye_keep = (ct_Nye_shelf(~isnan(ct_Nye_shelf))); %all non nan points in shelf
     ct_Nye_keep = ct_Nye_keep(~isinf(ct_Nye_keep));
+    ct_Nye_keep  = ct_Nye_keep(ct_Nye_keep < 5e4);
 
     if ~isempty(ct_Nye_keep)
         pd = fitdist(ct_Nye_keep,'kernel');
@@ -183,7 +185,7 @@ for i = 1:length(jdir)
     
 
     % plot point and add name
-    shelf_keep  = sum(idx_for_calc); %number of points with thickness data
+    shelf_keep  = sum(idx); %number of points with data for thickness, melt, strain
     percov(i) = shelf_keep/area_shelf(i) * 100;
     threshold_keep = 0;
     l = kappai / h_ave(i) / m_ave(i);
@@ -236,10 +238,12 @@ set(ax(2), 'YScale', 'log')
 set(ax(2), 'ZScale', 'log')
 ax(2).View = [45,36];
 grid(ax(2), 'on')
-ax(2).XLim = [0.0058    1.0];
-ax(2).YLim = [8e-5    0.0060];
-ax(2).ZLim = 1./flip([ 0.0361   10.0000]);
-ax(2).ZLim = [0.15,40];
+
+
+ax(2).XLim = [min(ell_ave(idx))*0.9,max(ell_ave(idx)) *1.1];            %ell limits
+ax(2).YLim = [min(epsxx_ave(idx))*0.9,max(epsxx_ave(idx))*1.1 ];        %strain rate limits
+ax(2).ZLim = [1./max(thinrate_ave(idx)) * 0.9,1./min(thinrate_ave(idx))*1.1 ]; %inverse thinning rate limits
+
  hold(ax(2), 'on');
  box(ax(2), 'on')
 lw = 1;
@@ -269,5 +273,6 @@ end
 
 %% save this data for use in figures 3 and 4
 if saveout
-    save('fig2_out_.mat', 'shelf_names', 'shelf_type', 'shelf_cols','ll', 'h_ave', 'ct_ave',"shelf_counts", "ct_ave_Nye")
+    save('fig2_out_.mat', 'shelf_names', 'shelf_type', 'shelf_cols','ll', 'h_ave', 'ct_ave',"shelf_counts", "ct_ave_Nye", "m_ave", 'thinrate_ave', "epsxx_ave")
 end
+
