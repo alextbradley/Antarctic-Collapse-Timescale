@@ -1,92 +1,134 @@
-% Make figure 4 of the ms, showing something to do with melt rate changes
-% required.
+% Make figure 4 of the ms, showing collapse timescale as a function of dM
+% on linear (a) and semilog (b) axes for cold ice shelves
 
 % ATB (aleey@bas.ac.uk), 21/02/23. MIT licence.
 
-%%
+%% Preliminaries
 addpath('../functions');
-f = load('../data/ice_sheet_data.mat', 'H', 'm'); %get the ice sheet thickness data (use this for shelf mask)
-
-
-target_time = [77,177,277]; %77 corresponds to 2100, 177 to 2200 etc.
-lt = length(target_time);
+%f = load('../data/ice_sheet_data.mat', 'H', 'm'); %get the ice sheet thickness data (use this for shelf mask)
+fig2data = load('fig2_out_.mat');
 step = 10;        %grid resolution in km
 
+shelf_names = ["Abbot","Amery","Borchgrevink","Brunt","Cook","Cosgrove","Crosson","Dotson","Filchner","FimbulJelbart",...
+    "George6","Getz","KingBaudoin","Larsen",  "Nansen","PineIsland","PineIslandFast","PopeSmithKohler","RiiserLarsen", "Ronne","Ross",...
+    "Shackleton", "Thwaites","TottenMoscow", "West","Wilkins"];
+
+data_folder = strcat('../gendata/figure4_1/step_', num2str(step));
 shelf_info_folder = "../data/ice-shelves/all-shelves/"; %where to find co-ordinate files
-dM_folder = strcat('../gendata/figure4/step_', num2str(step), '/target_time_', num2str(target_time(1)), '/'); %where to find dM results (need for size of dir here)
-jdir = dir(strcat(dM_folder, '*.mat'));
-ls = length(jdir);
 
-%setup storage
-dM = zeros(lt,ls);
-shelf_names = strings(1,ls);
-total_flux = zeros(1,ls);
+%% Loop over the shelves and store the data
+ct_shelves = cell(1,length(shelf_names));
+dM_shelves = cell(1,length(shelf_names));
+Pvals      = nan(2,length(shelf_names));
 
 
-dM_full = cell(lt,1);  %store arrays of full antarctic with shelves set to shelf wide dM
-curr_mean_melt = nan(size(f.H));
+for is = 1:length(shelf_names)
 
-for it = 1:lt
-    dM_folder = strcat('../gendata/figure4/step_', num2str(step), '/target_time_', num2str(target_time(it)), '/'); %where to find dM results
-    dM_full_this_targettime = nan(size(f.H)); 
+    %get the path to data
+    fpath = strcat(data_folder, '/', shelf_names(is));
+    jdir = dir(strcat(fpath, '/*.mat')); %each of these is a different value of dM
 
-    for is = 1:ls% loop over shelves
+    %loop over files in directory, each one is a different dM value
+    dMs = nan(1,length(jdir));
+    cts = nan(1,length(jdir));
+    for im  = 1:length(jdir)
+        ff = load(strcat(fpath, '/', jdir(im).name));
 
-        shelf = jdir(is).name;
-        data = load(strcat(dM_folder, shelf));
-        dM(it,is) = data.dM;
-        shelf_names(is) = strrep(shelf, '.mat', '');
+        dMs(im) = ff.dM;
+        cts(im) = ff.collapse_time;
+    end
 
-        % get the shelf info
-        shelf_info = load(strcat(shelf_info_folder, shelf));
-        idx = ~isnan(f.H) & shelf_info.IN; %points in a shelf and within the shelf region
+    %sort into increaseing dm order
+    [dMs,I] = sort(dMs);
+    cts = cts(I);
 
-        % fill in the array
-        dM_full_this_targettime(idx) = dM(it,is);
+    %store the results
+    ct_shelves{is} = cts;
+    dM_shelves{is} = dMs;
 
-        % get the current mean melt rate in the shelf
-        idxm = ~isnan(f.m) & shelf_info.IN; %points within the shelf region which have a melt rate
-        curr_mean_melt(idx) = mean(mean(f.m(idxm))); %set points in the shelf to the mean melt rate
+end
 
-        total_flux(is) = sum(sum(f.m(idxm)))*1e3*1e3/1e9; %total flux from this region (in gt/yr)
+%% Setup the plot
+figure(1); clf; hold on; box on
+fig= gcf; fig.Position(3:4) = [1300,500];
+
+w = 0.35;
+gapx = 0.1;
+gapy = 0.05;
+h = 0.4;
+startx = (1 - (2*w + gapx))/2;
+starty = 0.97 - (2*h + gapy);
+positions = [startx,            starty,             w, h;
+    startx,            starty + h + gapy,  w, h;
+    startx + gapx + w, starty,             w, 2*h + gapy];
+for i = 1:3
+    ax(i) =    subplot('Position', positions(i,:)) ;
+    hold(ax(i), 'on');
+    box(ax(i), 'on');
+end
 
 
-    end %end loop over shelves
-    dM_full{it} = dM_full_this_targettime;
-end %end loop over target times
+%% Make plot
+%cmap = lines(sum(fig2data.shelf_type == 1)); count = 1;
+splittol = 1250; %where to chop the plots
+for is =  1:length(shelf_names)
 
-%% Make a plot
-% figure(1); clf;
-% dM_full_copy = dM_full; dM_full_copy(dM_full_copy == 0) = 1e-6; %set minimum to 1e-6 so that we can plot on log scale if we want
-% %p = imagesc(log10(dM_full_copy));clim([-1,3]); %colormap(flipud(cmocean('amp')));
-% p = imagesc(log10(dM_full_copy./curr_mean_melt)); colormap('parula');clim([-1,2])
-% 
-% 
-% set(p, 'AlphaData', ~isnan(dM_full));
-% 
-% colorbar
-% ax = gca; ax.FontSize = 15;
+    %get the colour from figure 2 data
+    idx = find(shelf_names(is) == fig2data.shelf_names);
+    cc = fig2data.shelf_cols(idx,:);
+
+
+    %get the data from above
+    dMs = cell2mat(dM_shelves(is));
+    cts = cell2mat(ct_shelves(is));
+
+    if shelf_type(idx) == 1 %cold shelf
+        if (~strcmp(shelf_names(is), "Wilkins"))  && (~strcmp(shelf_names(is), "Nansen")) %remove there
+            xf = dMs(dMs<=10);
+            yf = cts(dMs<=10);
+           
+            if yf(1) > splittol
+                plot(ax(2),xf , yf,'-','linewidth', 2, 'color', cc)
+                text(ax(2), xf(1), yf(1), shelf_names(is), 'FontSize', 13);
+            else
+                plot(ax(1),xf , yf,'-','linewidth', 2, 'color', cc)
+                text(ax(1), xf(1), yf(1), shelf_names(is) , 'FontSize', 13);
+            end
+
+
+            xxf = xf(xf <= 1);
+            yyf =  yf(xf <= 1)./yf(1);
+            xxf = smooth(xxf);
+            yyf = smooth(yyf);
+            plot(ax(3),xxf, yyf,'-','linewidth', 2, 'color', cc)
+            tt = text(ax(3), xxf(end), yyf(end), shelf_names(is),'FontSize', 13);
+        end
+    end
+
+end
 
 
 %%
-figure(1); clf; plot(1:3,dM, 'linewidth', 2)
-set(gca,'YScale','log')
-ylim([0,2])
-ylim(10.^[0,2])
-xticks(1:3);
-ax = gca; ax.FontSize = 15;
-xticklabels = {'2100', '2200', '2300'};
-ax.XTickLabel = xticklabels;
-grid on
+for i =1:3
+    %set(ax(i), 'YScale', 'log');
+    %ax(i).XLim = [0,2];
 
-%% Make a bar chart
-bar(dM'); 
-ax = gca;
-ax.XTick = 1:26;
-ax.XTickLabel = shelf_names;
-ax.XTickLabelRotation = 45;
-ax.FontSize = 14;
-set(ax,'YScale', 'log')
-shg
-ylabel('melt increase (m/yr)');
-legend('2100', '2200', '2300')
+    ax(i).XLabel.String = '$\Delta \dot{m}$ (m/yr)';
+    ax(i).XLabel.Interpreter = 'latex';
+    ax(i).YLabel.Interpreter = 'latex';
+    ax(i).FontSize = 15;
+    grid(ax(i), 'on')
+
+end
+ax(1).YLim = [0, splittol];
+ax(2).YLim = [0, 3500];
+ ax(2).XLabel.String = '';
+ ax(2).XTick = ax(1).XTick;;
+ ax(2).XTickLabel = {};
+ax(3).YLabel.String = '$\tau(\Delta \dot{m})/ \tau(\Delta \dot{m} = 0)$';
+ax(1).YLabel.String = 'collapse timescale, $\tau(\Delta \dot{m})$';
+ax(2).YLabel.String = 'collapse timescale, $\tau(\Delta \dot{m})$';
+set(ax(3), 'YScale', 'log');
+ax(3).XLim = [0,1];
+ax(3).YLim = [0.25,1];
+%ax(1).YLim = [0,1e3];
