@@ -35,7 +35,8 @@ Bs = f.B(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
 sz = size(hs);
 
 %% adhoc adjustments
-dhdts = -abs(dhdts);  
+%dhdts = -abs(dhdts);  
+dhdts(:) = g.mean_dhdt;
 ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 
 %% scale variables
@@ -129,8 +130,8 @@ average_collapse_time = mean(kde);
 
 
 %toc
-% savefolder = strcat('./step_', num2str(step));
-% if ~exist(savefolder, 'dir'); mkdir(savefolder); end
-% save(strcat(savefolder, '/collapse_time_', shelf,'_step', num2str(step), '.mat'), ...
-%     'collapse_time', 'collapse_time_square', 'tags', 'xminidx', 'xmaxidx', 'yminidx', 'ymaxidx', 'pp', 'ms', 'dhdts', 'strains', 'shelf_name', 'step');
+savefolder = strcat('./step_', num2str(step));
+if ~exist(savefolder, 'dir'); mkdir(savefolder); end
+save(strcat(savefolder, '/collapse_time_', shelf,'_step', num2str(step), '.mat'), ...
+    'collapse_time', 'collapse_time_square', 'tags', 'xminidx', 'xmaxidx', 'yminidx', 'ymaxidx', 'pp', 'ms', 'dhdts', 'strains', 'shelf_name', 'step');
 end
