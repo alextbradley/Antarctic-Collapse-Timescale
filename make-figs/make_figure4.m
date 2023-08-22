@@ -13,7 +13,7 @@ shelf_names = ["Abbot","Amery","Borchgrevink","Brunt","Cook","Cosgrove","Crosson
     "George6","Getz","KingBaudoin","Larsen",  "Nansen","PineIsland","PineIslandFast","PopeSmithKohler","RiiserLarsen", "Ronne","Ross",...
     "Shackleton", "Thwaites","TottenMoscow", "West","Wilkins"];
 
-data_folder = strcat('../gendata/figure4_1/step_', num2str(step));
+data_folder = strcat('../gendata/figure4/step_', num2str(step));
 shelf_info_folder = "../data/ice-shelves/all-shelves/"; %where to find co-ordinate files
 
 %% Loop over the shelves and store the data
@@ -82,7 +82,7 @@ for is =  1:length(shelf_names)
     dMs = cell2mat(dM_shelves(is));
     cts = cell2mat(ct_shelves(is));
 
-    if shelf_type(idx) == 1 %cold shelf
+    if fig2data.shelf_type(idx) == 1 %cold shelf
         if (~strcmp(shelf_names(is), "Wilkins"))  && (~strcmp(shelf_names(is), "Nansen")) %remove there
             xf = dMs(dMs<=10);
             yf = cts(dMs<=10);
