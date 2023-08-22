@@ -41,17 +41,22 @@ ax(2).YLabel.String = 'strain rate (1/yr)';
 % 
 % do the regression
 %
-lm_dhdt = fitlm(ms,dhdts);
+lm_dhdt = fitlm(ms,negdhdts);
 lm_epsxx = fitlm(ms,epsxxs);
 
 %get coeffs
 p_dhdts = table2array(lm_dhdt.Coefficients(:,1));
 p_epsxx = table2array(lm_epsxx.Coefficients(:,1));
 
+fprintf('Regression coefficient between melt rate and thinning rate is %.4g \n', p_dhdts(2))
+fprintf('Regression coefficient between melt rate and strain rate is %.4g \n', p_epsxx(2))
+fprintf('\n')
+
+
 %
 % plot regression
 %
-ml = [0, 15];
+ml = linspace(0.01, 15);
 plot(ax(2), ml, p_epsxx(1)+p_epsxx(2)*ml, 'k', 'linewidth', 1.5 );
 plot(ax(1), ml, p_dhdts(1)+p_dhdts(2)*ml, 'k', 'linewidth', 1.5 );
 
@@ -61,3 +66,16 @@ plot(ax(1), ml, p_dhdts(1)+p_dhdts(2)*ml, 'k', 'linewidth', 1.5 );
 ax(2).YLim = [0, 0.015];
 ax(1).YLim = [0, 8];
 ax(1).YTick = 0:2:8;
+for i = 1:2; set(ax(i), 'XScale', 'log'); end
+
+%%
+% determine the correlation coefficienets
+[R_dhdt,P_dhdt, RL_dhdt,RU_dhdt] = corrcoef(ms, negdhdts);
+fprintf('Correlation coefficient between melt rate and thinning rate is %.3g \n', R_dhdt(1,2))
+fprintf('p-value of correlation coefficient between melt rate and thinning rate is %.3g \n', P_dhdt(1,2))
+fprintf('\n')
+
+[R_epsxx,P_epsxx, RL_epsxx, RU_epsxx] = corrcoef(ms, epsxx_ave);
+fprintf('Correlation coefficient between melt rate and thinning rate is %.3g \n', R_epsxx(1,2))
+fprintf('p-value of correlation coefficient between melt rate and thinning rate is %.3g \n', P_epsxx(1,2))
+
