@@ -1,15 +1,18 @@
-function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, step, d_m, d_epsxx,d_dhdt, f)
-%return the average collapse time for the shelf specified by shelf_name,
-%with melt, strain rate, and dhdt increased by d_m, d_epsxx, and d_dhdt
-%respectively. Step is the step in the grid resolution (integer, set to 1
-%for whole grid)
-% f is the input data set (ice_shelf_data.mat)
+function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, spatial_step, dm_timesonethousand, timestep, num_cpu,  f)
+%return the average collapse time for the input variables:
+% shelf_name: name of the ice shelf,
+% spatial_step: the number of multiples of the spatial grid to use (e.g.
+%            spatial_step = 2 corresponds to a resolution of 2*1km = 2km)
+% dm_timesonesthousand: melt increase times 1000 (multiplication so that we
+%            can have integer input)
+% timestep: timestep in the solver
+% num_cpu: number of cpus
+% f: input data set (ice_shelf_data.mat)
 
 % return the collapse time for the shelf inputted
-% poolobj = gcp('nocreate');
-% if ~isempty(poolobj);  delete(poolobj); end
-% num_cpu=32;
-% poolobj = parpool('local',num_cpu);
+poolobj = gcp('nocreate');
+if ~isempty(poolobj);  delete(poolobj); end
+poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
 addpath('../../functions')
@@ -25,13 +28,13 @@ g = load(fname);
 xminidx = min(rId); xmaxidx = max(rId);
 yminidx = min(cId); ymaxidx = max(cId); %indices of min and max in rows and columns
 
-%xs = f.xx(xminidx:step:xmaxidx);
-%ys = f.yy(yminidx:step:ymaxidx); %restricted co-ordinates
-hs = f.H(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
-ms = f.m(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
-dhdts = f.dMdtadj(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
-strains = f.eflow(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
-Bs = f.B(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
+%xs = f.xx(xminidx:spatial_step:xmaxidx);
+%ys = f.yy(yminidx:spatial_step:ymaxidx); %restricted co-ordinates
+hs = f.H(xminidx:spatial_step:xmaxidx, yminidx:spatial_step:ymaxidx);
+ms = f.m(xminidx:spatial_step:xmaxidx, yminidx:spatial_step:ymaxidx);
+dhdts = f.dMdtadj(xminidx:spatial_step:xmaxidx, yminidx:spatial_step:ymaxidx);
+strains = f.eflow(xminidx:spatial_step:xmaxidx, yminidx:spatial_step:ymaxidx);
+Bs = f.B(xminidx:spatial_step:xmaxidx, yminidx:spatial_step:ymaxidx);
 sz = size(hs);
 
 %% adhoc adjustments
@@ -40,7 +43,13 @@ dhdts(:) = g.mean_dhdt;
 ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 
 %% scale variables
+d_m = dm_timesonethousand/1000; 
 ms = ms + d_m; 
+s_epsxx =  6.8109e-04; 
+s_dhdt = -0.4724;      %numbers based on regression of shelves (see supplementary figure D)
+d_epsxx = d_m*s_epsxx;
+d_dhdt = d_m*s_dhdt;
+
 dhdts = dhdts + d_dhdt; mean(mean(dhdts(~isnan(dhdts))));
 strains = strains + d_epsxx; mean(mean(strains(~isnan(strains))));
 fprintf('Mean melt rate is %.3f m/yr \n', mean(mean(ms(~isnan(ms)))))
@@ -91,7 +100,7 @@ pp.ghf = ghf;
 collapse_time_square = nan(size(ms));
 %tic
 tmax = 1e4; %max time
-dt = 5; %timestep
+dt = timestep; %rename timestep
 parfor ix =  1:sz(1)
 %for ix = 1:length(xs)
 
@@ -119,7 +128,7 @@ end
 
 % put this back into the array
 collapse_time = nan(size(f.H));
-collapse_time(xminidx:step:xmaxidx, yminidx:step:ymaxidx) = collapse_time_square;
+collapse_time(xminidx:spatial_step:xmaxidx, yminidx:spatial_step:ymaxidx) = collapse_time_square;
 
 idx = ~isnan(collapse_time_square) & (collapse_time_square < 0.95*tmax); %remove very large output points
 collapse_time_count = collapse_time_square(idx); %the pts we count
@@ -128,10 +137,9 @@ average_collapse_time = mean(kde);
 
 %average_collapse_time = median(collapse_time_square(idx));
 
-
-%toc
-savefolder = strcat('./step_', num2str(step));
-if ~exist(savefolder, 'dir'); mkdir(savefolder); end
-save(strcat(savefolder, '/collapse_time_', shelf,'_step', num2str(step), '.mat'), ...
-    'collapse_time', 'collapse_time_square', 'tags', 'xminidx', 'xmaxidx', 'yminidx', 'ymaxidx', 'pp', 'ms', 'dhdts', 'strains', 'shelf_name', 'step');
-end
+% %toc
+% savefolder = strcat('./step_', num2str(step));
+% if ~exist(savefolder, 'dir'); mkdir(savefolder); end
+% save(strcat(savefolder, '/collapse_time_', shelf,'_step', num2str(step), '.mat'), ...
+%     'collapse_time', 'collapse_time_square', 'tags', 'xminidx', 'xmaxidx', 'yminidx', 'ymaxidx', 'pp', 'ms', 'dhdts', 'strains', 'shelf_name', 'step');
+% end
