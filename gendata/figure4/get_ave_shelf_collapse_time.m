@@ -1,4 +1,4 @@
-function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, spatial_step, dm_timesonethousand, timestep, num_cpu,  f)
+function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, spatial_step, dm_timesonethousand, timestep, num_cpu,  f,save_flag)
 %return the average collapse time for the input variables:
 % shelf_name: name of the ice shelf,
 % spatial_step: the number of multiples of the spatial grid to use (e.g.
@@ -135,11 +135,11 @@ collapse_time_count = collapse_time_square(idx); %the pts we count
 kde = fitdist(collapse_time_count,'Kernel');
 average_collapse_time = mean(kde);
 
-%average_collapse_time = median(collapse_time_square(idx));
-
-% %toc
-% savefolder = strcat('./step_', num2str(step));
-% if ~exist(savefolder, 'dir'); mkdir(savefolder); end
-% save(strcat(savefolder, '/collapse_time_', shelf,'_step', num2str(step), '.mat'), ...
-%     'collapse_time', 'collapse_time_square', 'tags', 'xminidx', 'xmaxidx', 'yminidx', 'ymaxidx', 'pp', 'ms', 'dhdts', 'strains', 'shelf_name', 'step');
-% end
+if save_flag
+        dM = d_m;
+        % directory:
+        folder = strcat("./step_", num2str(spatial_step), '/', shelf, '/');
+        if ~exist(folder,'dir'); mkdir(folder); end
+        fname = strcat(folder, strcat('dM_',num2str(dM)), ".mat");
+        save(fname, 'collapse_time', 'dM', 'timestep');
+end
