@@ -1,4 +1,4 @@
-function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, spatial_step, dm_timesonethousand, timestep, num_cpu,  f,save_flag)
+function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, spatial_step, dm_timesonethousand, timestep, num_cpu,  data_path,save_flag)
 %return the average collapse time for the input variables:
 % shelf_name: name of the ice shelf,
 % spatial_step: the number of multiples of the spatial grid to use (e.g.
@@ -7,7 +7,7 @@ function average_collapse_time = get_ave_shelf_collapse_time(shelf_name, spatial
 %            can have integer input)
 % timestep: timestep in the solver
 % num_cpu: number of cpus
-% f: input data set (ice_shelf_data.mat)
+% data_path: path to input data set (ice_shelf_data.mat)
 
 % return the collapse time for the shelf inputted
 poolobj = gcp('nocreate');
@@ -16,6 +16,9 @@ poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
 addpath('../../functions')
+
+whos data_path
+f  = load(data_path);
 
 %% Load the ice shelf data
 %f  = load('../../data/ice_sheet_data.mat');
@@ -141,5 +144,5 @@ if save_flag
         folder = strcat("./step_", num2str(spatial_step), '/', shelf, '/');
         if ~exist(folder,'dir'); mkdir(folder); end
         fname = strcat(folder, strcat('dM_',num2str(dM)), ".mat");
-        save(fname, 'collapse_time', 'dM', 'timestep');
+        save(fname, 'collapse_time', 'dM', 'timestep', 'average_collapse_time');
 end

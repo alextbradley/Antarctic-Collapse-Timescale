@@ -2,17 +2,18 @@
 %array job. text file has six columns containing (1) array job number, (2)
 %shelf name, (3) dm value (multiplied by 1000, so its an integer), (4)
 %spatial step, (5) timestep, and (6) number of cpus (typically 2 on my
-%macbook and 24/32 on the hpc)
+%macbook and 24/32 on the hpc). NB: string names must be in double and
+%single quotes!
 
-shelf_names = ["Abbot","Amery","Borchgrevink","Brunt","Cook","Cosgrove","Crosson","Dotson","Filchner","FimbulJelbart",...
-    "George6","Getz","KingBaudoin","Larsen",  "Nansen","PineIsland","PineIslandFast","PopeSmithKohler","RiiserLarsen", "Ronne","Ross",...
-    "Shackleton", "Thwaites","TottenMoscow", "West","Wilkins"];
+shelf_names = ["'Abbot'","'Amery'","'Borchgrevink'","'Brunt'","'Cook'","'Cosgrove'","'Crosson'","'Dotson'","'Filchner'","'FimbulJelbart'",...
+    "'George6'","'Getz'","'KingBaudoin'","'Larsen'",  "'Nansen'","'PineIsland'","'PineIslandFast'","'PopeSmithKohler'","'RiiserLarsen'", "'Ronne'","'Ross'",...
+    "'Shackleton'", "'Thwaites'","'TottenMoscow'", "'West'","'Wilkins'"];
 
 dm_timesonethousand = 100:100:900; %dm *1e-3
 
-spacestep = 1; 
-timestep  = 1; 
-numcpu    = 32; 
+spacestep = 10; 
+timestep  = 5; 
+numcpu    = 2; 
 
 num_entr = length(shelf_names)*length(dm_timesonethousand);
 
@@ -26,6 +27,7 @@ for i = 1:length(shelf_names)
         D{count,4} = double(spacestep);
         D{count,5} = timestep;
         D{count,6} = numcpu;
+        D{count,7} = "'../../data/ice_sheet_data.mat'";
         count = count + 1;
     end
 end
@@ -33,5 +35,5 @@ end
 
 fido = fopen('array-config.txt', 'w');
 for k1 = 1:size(D,1)
-    fprintf(fido, '%d %s %d %d %d %d\n', D{k1,:});
+    fprintf(fido, '%d %s %d %d %d %d %s\n', D{k1,:});
 end
