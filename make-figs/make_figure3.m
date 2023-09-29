@@ -1,6 +1,6 @@
-% Make figure 3 of the ms, showing the (a) collapse time  and  (b) violin
-% plots of the collapse time, showing the mean for both LEFM and NYE
-% theory. 
+% Make figure 3 of the ms, showing the (a) collapse time with ocean forcing
+% and  (b) violin plots of the collapse time, showing the mean for both
+% LEFM and NYE theory.
 %
 % ATB (aleey@bas.ac.uk), 17/02/2023. MIT Licence.
 %
@@ -8,7 +8,7 @@
 % to get the statistics for (b).
 %% Preliminaries
 %clear
-f = load('../../data/ice-sheet-data.mat', 'tf_max');
+f = load('../data/ice_sheet_data.mat', 'tf_max', 'H');
 addpath('../functions');
 fs = 14; %fontsize
 cmap = flipud(cmocean('matter', 100));
@@ -35,7 +35,6 @@ map = interp1(x/255,T,linspace(0,1,255));
 
 ocean_cmap = cmocean('haline', 100);
 ocean_cmap = flipud(ocean_cmap(50:end,:));
-
 
 
 %% Part (a)
@@ -150,17 +149,13 @@ figure(2); clf; hold on; box on
 % load the data from figure 2
 fig2data = load('fig2_out_.mat');
 
-% restrict only to those shelves we're keeping
-shelf_type(17) = 0; %remove the pine island subsection
-lk            = fig2data.ll(shelf_type~=0);
-hk            = fig2data.h_ave(shelf_type~=0);
-ct_avek       = fig2data.ct_ave(shelf_type~=0);
-ct_ave_Nye_k  = fig2data.ct_ave_Nye(shelf_type~=0);
-shelf_typek   = fig2data.shelf_type(shelf_type~=0);
-shelf_countsk = fig2data.shelf_counts(shelf_type~=0);
-shelf_namesk  = fig2data.shelf_names(shelf_type~=0);
-bar_coldatak  = fig2data.shelf_cols(shelf_type~=0,:);
-
+% load the data from fig 2
+melt_rate      = fig2data.ave_melt_rate;
+shelf_colours  = fig2data.shelf_colours;
+crevasse_times = fig2data.crevasse_times;
+ave_ct         = fig2data.ave_crevasse_time;
+ave_ct_Nye     = fig2data.ave_crevasse_time_Nye;
+shelf_names    = fig2data.shelf_names_adj;
 
 % put back ground levels on
 levs = [80, 180, 280, 980];
@@ -168,24 +163,21 @@ for i = 1:4
 plot([0,30], levs(i)*[1,1], 'linewidth', 1, 'Color',[80,62,183]/255)
 end
 
-% sort the data in increasing mean
-[~,I] = sort(ct_avek);
-lks = lk(I);
-shelf_namesks = shelf_namesk(I);
-shelf_countsks = shelf_countsk(I);
-bar_coldataks = bar_coldatak(I,:);
-shelf_typeks = shelf_typek(I);
-ct_aveks = ct_avek(I); 
-ct_ave_Nye_ks = ct_ave_Nye_k(I); 
+% sort the data in increasing collapse time
+[~,I] = sort(ave_ct);
+melt_rate_sorted = melt_rate(I);
+shelf_colours_sorted = shelf_colours(I,:);
+shelf_names_sorted = shelf_names(I);
+ave_ct_sorted = ave_ct(I); 
+ave_ct_Nye_sorted = ave_ct_Nye(I); 
+crevasse_times_sorted = crevasse_times(I);
 
 w = 0.3; %width of the dist
-for i = 1:length(shelf_typeks)
+for i = 1:length(melt_rate_sorted)
 
     %get the data as array
-    counts = cell2mat(shelf_countsks(i));
+    counts = cell2mat(crevasse_times_sorted(i));
     counts(counts == 0) = 1; %make the plotting a bit nicer
-    %counts = counts(counts < 5e4); %remove very long (this is done by the
-    %make figure2 script)
 
     %fit a kde to it
     if ~isempty(counts)
@@ -204,13 +196,13 @@ for i = 1:length(shelf_typeks)
     yf = [x,flip(x)];
 
     %fill the data
-    fill(xf, yf, bar_coldataks(i,:), 'linewidth', 1, 'EdgeColor', 0.2*[1,1,1])
+    fill(xf, yf, shelf_colours_sorted(i,:), 'linewidth', 1, 'EdgeColor', 0.2*[1,1,1])
 
     % add mean as a point
-    plot(cline,ct_aveks(i),'ko', 'markerfacecolor', 0*[1,1,1], 'markersize', 6,'LineWidth',1.1 )
+    plot(cline,ave_ct_sorted(i),'ko', 'markerfacecolor', 0*[1,1,1], 'markersize', 6,'LineWidth',1.1 )
 
     % add the Nye result
-    plot(cline,ct_ave_Nye_ks(i),'ko','marker','o' ,'markerfacecolor',  1*[1,1,1], 'markersize', 6, 'LineWidth',1.1 )
+    plot(cline,ave_ct_Nye_sorted(i),'ko','marker','o' ,'markerfacecolor',  1*[1,1,1], 'markersize', 6, 'LineWidth',1.1 )
 
     end
 end
@@ -222,39 +214,11 @@ fig.Position(3:4) = [1200, 240];
 ax3 = gca; ax3.FontSize = 14;
 ax3.YTick = logspace(0,4,5);
 
-% Adjust the names
-shelf_namesks(shelf_namesks ==  "Thwaites") = "THW";
-shelf_namesks(shelf_namesks ==  "Crosson") = "CRO";
-shelf_namesks(shelf_namesks ==  "PopeSmithKohler") = "PSK";
-shelf_namesks(shelf_namesks ==  "Dotson") = "DOT";
-shelf_namesks(shelf_namesks ==  "PineIslandFast") = "PIF";
-shelf_namesks(shelf_namesks ==  "PineIsland") = "PIG";
-shelf_namesks(shelf_namesks ==  "Larsen") = "LAR";
-shelf_namesks(shelf_namesks ==  "Wilkins") = "WIL";
-shelf_namesks(shelf_namesks ==  "Brunt") = "BRU";
-shelf_namesks(shelf_namesks ==  "George6") = "GVI";
-shelf_namesks(shelf_namesks ==  "Getz") = "GET";
-shelf_namesks(shelf_namesks ==  "Shackleton") = "SHA";
-shelf_namesks(shelf_namesks ==  "West") = "WES";
-shelf_namesks(shelf_namesks ==  "Cook") = "COO";
-shelf_namesks(shelf_namesks ==  "Nansen") = "NAN";
-shelf_namesks(shelf_namesks ==  "Cosgrove") = "COS";
-shelf_namesks(shelf_namesks ==  "Borchgrevink") = "BOR";
-shelf_namesks(shelf_namesks ==  "Abbot") = "ABB";
-shelf_namesks(shelf_namesks ==  "SwinburneSulzbergerNickerson") = "SSN";
-shelf_namesks(shelf_namesks ==  "FimbulJelbart") = "FIM";
-shelf_namesks(shelf_namesks ==  "KingBaudoin") = "BAU";
-shelf_namesks(shelf_namesks ==  "TottenMoscow") = "TOT";
-shelf_namesks(shelf_namesks ==  "RiiserLarsen") = "RII";
-shelf_namesks(shelf_namesks ==  "Amery") = "AME";
-shelf_namesks(shelf_namesks ==  "Ronne") = "RON";
-shelf_namesks(shelf_namesks ==  "Ross") = "ROSS ";
-shelf_namesks(shelf_namesks ==  "Filchner") = "FIL";
 
-ax3.XLim = [0,length(shelf_namesk)+1];
+ax3.XLim = [0,length(shelf_names_sorted)+1];
 ax3.YLim = [10^0,4*10^4];
-ax3.XTick = 1:length(shelf_countsks);
-ax3.XTickLabel = shelf_namesks;
+ax3.XTick = 1:length(shelf_names_sorted);
+ax3.XTickLabel = shelf_names_sorted;
 ax3.XTickLabelRotation = 45;
 ax3.YLabel.String = 'collapse timescale';
 
@@ -265,10 +229,10 @@ levs  = logspace(0,4,length(cmap)); %these are the levels of the colourmap in lo
 for i = 1:27 
     subplot(3,9,count);
     
-    diam =2*  sqrt(ct_aveks(i));
+    diam =2*  sqrt(ave_ct_sorted(i));
 
     %work out what the colour should be
-    [~,idx] = min(abs(ct_aveks(i) - levs) ); %get index of nearest colourmap
+    [~,idx] = min(abs(ave_ct_sorted(i) - levs) ); %get index of nearest colourmap
     colpt = cmap(idx,:);
     
     
