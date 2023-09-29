@@ -1,4 +1,4 @@
-%%% Make supplementary figure A of the manuscript, showing violin plots of the density of thinning rate points.
+%%% Make supplementary figure "B" of the manuscript, showing violin plots of the density of thinning rate points.
 %
 % ATB (aleey@bas.ac.uk), 21/04/23, MIT licence.
 %% Preliminaries
