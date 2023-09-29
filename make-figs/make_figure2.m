@@ -187,7 +187,7 @@ for i = 1:length(jdir)
     % plot point and add name
     shelf_keep  = sum(idx); %number of points with data for thickness, melt, strain
     percov(i) = shelf_keep/area_shelf(i) * 100;
-    threshold_keep = 0;
+    threshold_keep = 0; %0 for keep them all 
     l = kappai / h_ave(i) / m_ave(i);
     ll(i) = l;
     if (percov(i) > threshold_keep) || shelf == "Thwaites" %only plot if > threshold% coverage
