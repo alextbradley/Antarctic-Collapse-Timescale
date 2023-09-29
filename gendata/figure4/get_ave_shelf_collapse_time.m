@@ -17,7 +17,7 @@ poolobj = parpool('local',num_cpu);
 shelf_name = string(shelf_name);
 addpath('../../functions')
 
-whos data_path
+%whos data_path
 f  = load(data_path);
 
 %% Load the ice shelf data
@@ -49,9 +49,13 @@ ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 d_m = dm_timesonethousand/1000; 
 ms = ms + d_m; 
 s_epsxx =  6.8109e-04; 
-s_dhdt = -0.4724;      %numbers based on regression of shelves (see supplementary figure D)
+s_dhdt = -0.4724;      %numbers based on regression of shelves (see figure 2)
 d_epsxx = d_m*s_epsxx;
 d_dhdt = d_m*s_dhdt;
+
+% power law relationship
+d_epsxx = 0.0033*ms.^(0.4) - 0.0033*(ms - d_m).^(0.4);
+d_dhdt  = -(0.66*ms.^(0.7) - 0.66*(ms - d_m).^(0.7));
 
 dhdts = dhdts + d_dhdt; mean(mean(dhdts(~isnan(dhdts))));
 strains = strains + d_epsxx; mean(mean(strains(~isnan(strains))));
