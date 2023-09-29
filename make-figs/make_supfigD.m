@@ -13,6 +13,7 @@ idx = fig2data.shelf_type >0;
 ms     = fig2data.m_ave(idx);
 negdhdts  = fig2data.thinrate_ave(idx);
 epsxxs = fig2data.epsxx_ave(idx);
+shelf_names =  fig2data.shelf_names(idx);
 
 %
 % scatter these
@@ -23,8 +24,13 @@ lw       = 1;
 ax(1) = subplot(1,2,1); 
 scatter(ms, negdhdts,  scatsize, shelf_cols(idx,:), 'filled','MarkerEdgeColor','k', 'linewidth', lw);
 
+text(ms, negdhdts, cellstr(shelf_names(idx)));
+
 ax(2) = subplot(1,2,2); 
 scatter(ms, epsxxs, scatsize, shelf_cols(idx,:),'filled','MarkerEdgeColor','k', 'linewidth', lw);
+
+text(ms, epsxxs, cellstr(shelf_names(idx)));
+
 
 for i = 1:2
     ax(i).FontSize = 15;
@@ -76,6 +82,6 @@ fprintf('p-value of correlation coefficient between melt rate and thinning rate 
 fprintf('\n')
 
 [R_epsxx,P_epsxx, RL_epsxx, RU_epsxx] = corrcoef(ms, epsxx_ave);
-fprintf('Correlation coefficient between melt rate and thinning rate is %.3g \n', R_epsxx(1,2))
-fprintf('p-value of correlation coefficient between melt rate and thinning rate is %.3g \n', P_epsxx(1,2))
+fprintf('Correlation coefficient between melt rate and strain rate is %.3g \n', R_epsxx(1,2))
+fprintf('p-value of correlation coefficient between melt rate and strain rate is %.3g \n', P_epsxx(1,2))
 

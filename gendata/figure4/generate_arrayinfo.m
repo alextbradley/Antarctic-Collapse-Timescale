@@ -8,12 +8,13 @@
 shelf_names = ["'Abbot'","'Amery'","'Borchgrevink'","'Brunt'","'Cook'","'Cosgrove'","'Crosson'","'Dotson'","'Filchner'","'FimbulJelbart'",...
     "'George6'","'Getz'","'KingBaudoin'","'Larsen'",  "'Nansen'","'PineIsland'","'PineIslandFast'","'PopeSmithKohler'","'RiiserLarsen'", "'Ronne'","'Ross'",...
     "'Shackleton'", "'Thwaites'","'TottenMoscow'", "'West'","'Wilkins'"];
+shelf_names = ["Brunt"]
 
-dm_timesonethousand = 100:100:900; %dm *1e-3
+dm_timesonethousand = 0:100:900; %dm *1e-3
 
-spacestep = 10; 
-timestep  = 5; 
-numcpu    = 2; 
+spacestep = 1; 
+timestep  = 1; 
+numcpu    = 32; 
 
 num_entr = length(shelf_names)*length(dm_timesonethousand);
 

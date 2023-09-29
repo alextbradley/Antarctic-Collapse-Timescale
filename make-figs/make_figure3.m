@@ -8,6 +8,7 @@
 % to get the statistics for (b).
 %% Preliminaries
 %clear
+f = load('../../data/ice-sheet-data.mat', 'tf_max');
 addpath('../functions');
 fs = 14; %fontsize
 cmap = flipud(cmocean('matter', 100));
@@ -32,6 +33,11 @@ x = [0
 map = interp1(x/255,T,linspace(0,1,255));
 %cmap = map;
 
+ocean_cmap = cmocean('haline', 100);
+ocean_cmap = flipud(ocean_cmap(50:end,:));
+
+
+
 %% Part (a)
 fig1 = figure(1);clf;
 fig1.Position(3:4) = [900, 900];
@@ -41,9 +47,27 @@ tags = ff.tags;
 inf_col = [1,1,1]; %infinite time colour
 misdat_col = 0.6* [1,1,1];
 
+% Background: thermal forcing
+axlayer0 = gca; 
+tfmax = f.tf_max;
+pl0 = imagesc(axlayer0, f.tf_max);
+set(pl0, 'AlphaData', ~isnan(tfmax));
+colormap(axlayer0, ocean_cmap)
+axlayer0.Visible = 'off';
+set(axlayer0, "YDir", 'reverse')
+axis equal
+clear clim; clim([0,4])
+c0 = colorbar(axlayer0);
+c0.Position(1) = 0.9; %move out of the way
+c0.Position(4) = 0.3;
+c0.Position(2) = 0.5;
+c0.Position(3) = 0.01;
+c0.Ticks = 0:4;
+c0.FontSize = 12;
 
 % 1: collapse time
-ax = gca;
+%ax = gca;
+ax = axes();
 pl = imagesc(ax, log10((ct))); 
 set(pl, 'AlphaData', ~isnan(ct));
 set(ax, "YDir", 'reverse')
@@ -54,12 +78,14 @@ clear clim; clim([0,4])
 c = colorbar(ax);
 c.Position(1) = 0.9; %move out of the way
 c.Ticks = 0:4;
-c.FontSize = 14;
-c.TickLabels = {'10^0', '10^1', '10^2', '10^3', '10^4'};
-c.Position(4) = 0.4;
-c.Position(2) = 0.4;
+c.FontSize = 12;
+c.TickLabels = {'10^0', '10^1', '10^2', '10^3', '>10^4'};
+c.Position(4) = 0.3;
+c.Position(2) = 0.1;
 c.Position(3) = 0.01;
 %colorbar(ax);
+axlayer0.Position = ax.Position;
+c0.TickLabels = {"0","1","2","3",">4"};
 
 
 % 2: missing data
@@ -101,13 +127,22 @@ axlayer5.Visible = 'off';
 axis equal
 
 
-linkaxes([ax, axlayer2, axlayer3, axlayer5])
+linkaxes([axlayer0, ax, axlayer2, axlayer3, axlayer5])
 fig = gcf;
 %fig.Position(3:4) = [655,507];
 
 colormap(ax, cmap);
 
+%% print the coverage of this map (i.e. what percenatage of points are not missing data)
+misdata = zeros(size(tags));
+misdata(tags == 2) = 1;
 
+ntot = prod(size(tags)) - sum(sum(tags == 1));  %total number of ice shelf points (tag = 1 corresponds to no thickness data)
+
+
+per_miss = sum(sum(tags == 2))/ntot * 100;
+
+fprintf('Percentage coverage of data is %.3f percent \n', 100- per_miss)
 
 %% Make panel b: violin plots of timescales
 figure(2); clf; hold on; box on
@@ -116,6 +151,7 @@ figure(2); clf; hold on; box on
 fig2data = load('fig2_out_.mat');
 
 % restrict only to those shelves we're keeping
+shelf_type(17) = 0; %remove the pine island subsection
 lk            = fig2data.ll(shelf_type~=0);
 hk            = fig2data.h_ave(shelf_type~=0);
 ct_avek       = fig2data.ct_ave(shelf_type~=0);
@@ -125,6 +161,12 @@ shelf_countsk = fig2data.shelf_counts(shelf_type~=0);
 shelf_namesk  = fig2data.shelf_names(shelf_type~=0);
 bar_coldatak  = fig2data.shelf_cols(shelf_type~=0,:);
 
+
+% put back ground levels on
+levs = [80, 180, 280, 980];
+for i = 1:4
+plot([0,30], levs(i)*[1,1], 'linewidth', 1, 'Color',[80,62,183]/255)
+end
 
 % sort the data in increasing mean
 [~,I] = sort(ct_avek);
@@ -176,14 +218,64 @@ end
 set(gca, 'YScale', 'log')
 
 fig = gcf;
-fig.Position(3:4) = [1200, 350];
+fig.Position(3:4) = [1200, 240];
 ax3 = gca; ax3.FontSize = 14;
+ax3.YTick = logspace(0,4,5);
 
+% Adjust the names
+shelf_namesks(shelf_namesks ==  "Thwaites") = "THW";
+shelf_namesks(shelf_namesks ==  "Crosson") = "CRO";
 shelf_namesks(shelf_namesks ==  "PopeSmithKohler") = "PSK";
+shelf_namesks(shelf_namesks ==  "Dotson") = "DOT";
+shelf_namesks(shelf_namesks ==  "PineIslandFast") = "PIF";
+shelf_namesks(shelf_namesks ==  "PineIsland") = "PIG";
+shelf_namesks(shelf_namesks ==  "Larsen") = "LAR";
+shelf_namesks(shelf_namesks ==  "Wilkins") = "WIL";
+shelf_namesks(shelf_namesks ==  "Brunt") = "BRU";
+shelf_namesks(shelf_namesks ==  "George6") = "GVI";
+shelf_namesks(shelf_namesks ==  "Getz") = "GET";
+shelf_namesks(shelf_namesks ==  "Shackleton") = "SHA";
+shelf_namesks(shelf_namesks ==  "West") = "WES";
+shelf_namesks(shelf_namesks ==  "Cook") = "COO";
+shelf_namesks(shelf_namesks ==  "Nansen") = "NAN";
+shelf_namesks(shelf_namesks ==  "Cosgrove") = "COS";
+shelf_namesks(shelf_namesks ==  "Borchgrevink") = "BOR";
+shelf_namesks(shelf_namesks ==  "Abbot") = "ABB";
 shelf_namesks(shelf_namesks ==  "SwinburneSulzbergerNickerson") = "SSN";
+shelf_namesks(shelf_namesks ==  "FimbulJelbart") = "FIM";
+shelf_namesks(shelf_namesks ==  "KingBaudoin") = "BAU";
+shelf_namesks(shelf_namesks ==  "TottenMoscow") = "TOT";
+shelf_namesks(shelf_namesks ==  "RiiserLarsen") = "RII";
+shelf_namesks(shelf_namesks ==  "Amery") = "AME";
+shelf_namesks(shelf_namesks ==  "Ronne") = "RON";
+shelf_namesks(shelf_namesks ==  "Ross") = "ROSS ";
+shelf_namesks(shelf_namesks ==  "Filchner") = "FIL";
+
 ax3.XLim = [0,length(shelf_namesk)+1];
 ax3.YLim = [10^0,4*10^4];
 ax3.XTick = 1:length(shelf_countsks);
 ax3.XTickLabel = shelf_namesks;
 ax3.XTickLabelRotation = 45;
 ax3.YLabel.String = 'collapse timescale';
+
+%% Make circles showing collapse time 
+figure(3); clf; hold on
+count = 1;
+levs  = logspace(0,4,length(cmap)); %these are the levels of the colourmap in log
+for i = 1:27 
+    subplot(3,9,count);
+    
+    diam =2*  sqrt(ct_aveks(i));
+
+    %work out what the colour should be
+    [~,idx] = min(abs(ct_aveks(i) - levs) ); %get index of nearest colourmap
+    colpt = cmap(idx,:);
+    
+    
+    plot(0,0,'o', 'markerfacecolor', colpt, 'markersize', diam, 'MarkerEdgeColor', 'k', 'LineWidth',1)
+    count = count + 1;
+    title(shelf_namesks(i))
+    ax = gca; ax.Visible = 'off';
+    hold on
+    text(0,0, shelf_namesks(i))
+end
