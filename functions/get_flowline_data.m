@@ -19,8 +19,8 @@ ymaxidx = max(cId); %indices of min and max in rows and columns
 
 %
 % restrict co-ordinates and variables to this subset
-xs = data.xx(xminidx:xmaxidx);
-ys = data.yy(yminidx:ymaxidx);
+xs = data.yy(xminidx:xmaxidx);
+ys = data.xx(yminidx:ymaxidx);
 hs = data.H(xminidx:xmaxidx, yminidx:ymaxidx);
 vs = data.v(xminidx:xmaxidx, yminidx:ymaxidx);
 us = data.u(xminidx:xmaxidx, yminidx:ymaxidx);
@@ -170,7 +170,7 @@ for i = 1:length(gl_idxs)
         count = count + 1;
     end
     if mod(i,100) == 0
-        i/length(gl_idxs)
+        fprintf('progress on getting flowlines is %.1f percent \n', i/length(gl_idxs)*100);
     end
 end %end loop over grounding line pts
 
