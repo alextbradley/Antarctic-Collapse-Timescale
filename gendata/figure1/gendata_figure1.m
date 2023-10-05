@@ -20,7 +20,7 @@ B0 = 1.928; %viscosity constant
 glen_n = 3;
 frac_tough = 150e3;
 rhoi = 918.0; 
-dhdt = -1; %ice thickness rat eof change
+dhdt = -1; %ice thickness rate of change
 
 %% Generate data for (a), (b)
 ds = 1e3; %flowline spacing
