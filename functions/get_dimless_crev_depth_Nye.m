@@ -19,7 +19,7 @@ Bbar= 2*sum(B)*dz;
 Rxx = 2*Bbar.* sign(pp.epsxx).*(abs(pp.epsxx)).^(1/n);
 rhoi = 918.0;
 rhow = 1028.0;
-g = 9.18; 
-dimless_crev_depth = Rxx / g / (rhow - rhoi) / pp.H0;
+g = 9.81; 
+dimless_crev_depth = Rxx / g / (rhow - rhoi) / pp.H0; %from Nick et al. (2010) eqn 6, using Hab = 0 (floating ice)
 
 end

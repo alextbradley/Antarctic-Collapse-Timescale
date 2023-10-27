@@ -194,8 +194,12 @@ m = logspace(-2,2);
 plot(ax(2), m, 10^(p_strain_rate_power(1))*m.^(p_strain_rate_power(2)), 'k', 'linewidth', 1.5 );
 plot(ax(1), m, 10^(p_thinning_rate_power(1))*m.^(p_thinning_rate_power(2)), 'k', 'linewidth', 1.5 );
 % 
+% linear regression
 % plot(ax(2), m, p_strain_rate(1) + m*(p_strain_rate(2)), 'k--', 'linewidth', 1.5 );
 % plot(ax(1), m, p_thinning_rate_power(1)+m* (p_thinning_rate_power(2)), 'k--', 'linewidth', 1.5 );
+
+plot(ax(2), m, 0.0033*m.^(0.4), 'r--')
+plot(ax(1), m, 0.66*m.^(0.4), 'r--')
 
 shelf_colours = nan(length(ave_melt_rate), 3);
 for i = 1:length(jdir)

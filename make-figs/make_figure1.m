@@ -214,10 +214,7 @@ cc.FontSize = c.FontSize;
 cc.Label.String = 'melt rate (m/yr)';
 cc.Label.FontSize = fs+2;
 cc.Colormap = colmapcts;
-cc.Position(3) = c.Position(3);
-cc.Position(2) = c.Position(2);
-cc.Position(4) = c.Position(4);
-cc.Position(1) = 0.955;
+cc.Position = [0.9050    0.5400    0.0080    0.4000];
 cc.Label.Position(1) = 3;
 
 % Tidy panels

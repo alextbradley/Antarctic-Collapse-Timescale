@@ -6,12 +6,15 @@
 %% Preliminaries
 addpath('../functions');
 %f = load('../data/ice_sheet_data.mat', 'H', 'm'); %get the ice sheet thickness data (use this for shelf mask)
-fig2data = load('fig2_out_.mat');
+
 step = 10;        %grid resolution in km
 
-shelf_names = ["Abbot","Amery","Borchgrevink","Brunt","Cook","Cosgrove","Crosson","Dotson","Filchner","FimbulJelbart",...
-    "George6","Getz","KingBaudoin","Larsen",  "Nansen","PineIsland","PineIslandFast","PopeSmithKohler","RiiserLarsen", "Ronne","Ross",...
-    "Shackleton", "Thwaites","TottenMoscow", "West","Wilkins"];
+shelf_names = ["Abbot","Amery","Borchgrevink","Filchner","FimbulJelbart",...
+    "KingBaudoin","Larsen","RiiserLarsen", "Ronne","Ross",...
+    "Shackleton", "West"];
+
+shelf_names_plot = ["ABB", "AME", "BOR", "FIL", "FIM", "BAU", "LAR", "RII",...
+    "RON", "ROSS", "SHA", "WES"];
 
 data_folder = strcat('../gendata/figure4/step_', num2str(step), '_CircumAntCoeffs');
 shelf_info_folder = "../data/ice-shelves/all-shelves/"; %where to find co-ordinate files
@@ -52,11 +55,11 @@ end
 
 %% Setup the plot
 figure(1); clf; hold on; box on
-fig= gcf; fig.Position(3:4) = [1300,800];
+fig= gcf; fig.Position(3:4) = [1150,800];
 
 % setup panels (a)--(c)
 w = 0.35;
-gapx = 0.1;
+gapx = 0.06;
 gapy = 0.05;
 h = 0.2;
 startx = (1 - (2*w + gapx))/2;
@@ -72,7 +75,7 @@ for i = 1:3
 end
 
 % setup panels (d)--(g)
-g2 = 0.05; %gap between these panels
+g2 = 0.06; %gap between these panels
 w2 = (1 - 2*startx - 4*g2)/5; %width of these panels
 h2 = 0.3; %height of these panels
 starty2 = 0.1;
@@ -87,42 +90,32 @@ end
 
 
 %% Panels (a)--(c) showing collapse times on linear scale (a,b) and log scale (c)
-%cmap = lines(sum(fig2data.shelf_type == 1)); count = 1;
+cmap = lines(length(shelf_names)); count = 1;
 splittol = 1250; %where to chop the plots
-for is =  1:length(shelf_names)
 
-    %get the colour from figure 2 data
-    idx = find(shelf_names(is) == fig2data.shelf_names);
-    cc = fig2data.shelf_cols(idx,:);
+for is =  1:length(shelf_names)
 
 
     %get the data from above
     dMs = cell2mat(dM_shelves(is));
     cts = cell2mat(ct_shelves(is));
+    xf = dMs(dMs<=10);
+    yf = cts(dMs<=10);
 
-    if fig2data.shelf_type(idx) == 1 %cold shelf
-        if (~strcmp(shelf_names(is), "Wilkins"))  && (~strcmp(shelf_names(is), "Nansen")) %remove these (lack of data)
-            xf = dMs(dMs<=10);
-            yf = cts(dMs<=10);
-           
-            if yf(1) > splittol
-                plot(ax(2),xf , yf,'-','linewidth', 2, 'color', cc)
-                text(ax(2), xf(1), yf(1), shelf_names(is), 'FontSize', 13);
-            else
-                plot(ax(1),xf , yf,'-','linewidth', 2, 'color', cc)
-                text(ax(1), xf(1), yf(1), shelf_names(is) , 'FontSize', 13);
-            end
-
-            xxf = xf(xf <= 1);
-            yyf =  yf(xf <= 1)./yf(1);
-            xxf = smooth(xxf);
-            yyf = smooth(yyf);
-            plot(ax(3),xxf, yyf,'-','linewidth', 2, 'color', cc)
-            tt = text(ax(3), xxf(end), yyf(end), shelf_names(is),'FontSize', 13);
-        end
+    if yf(1) > splittol
+        plot(ax(2),xf , yf,'-','linewidth', 2, 'color', cmap(is,:))
+        text(ax(2), xf(1), yf(1), shelf_names_plot(is), 'FontSize', 14);
+    else
+        plot(ax(1),xf , yf,'-','linewidth', 2, 'color', cmap(is,:))
+        text(ax(1), xf(1), yf(1), shelf_names_plot(is) , 'FontSize', 14);
     end
 
-    
+    xxf = xf(xf <= 1);
+    yyf =  yf(xf <= 1)./yf(1);
+    xxf = smooth(xxf);
+    yyf = smooth(yyf);
+    plot(ax(3),xxf, yyf,'-','linewidth', 2, 'color', cmap(is,:))
+    tt = text(ax(3), xxf(end), yyf(end), shelf_names_plot(is),'FontSize', 14);
 
 end
 
@@ -143,8 +136,8 @@ ax(2).YLim = [0, 3500];
 ax(2).XLabel.String = '';
 ax(2).XTick = ax(1).XTick;
 ax(2).XTickLabel = {};
-ax(3).YLabel.String = '$\tau(\Delta \dot{m})/ \tau(\Delta \dot{m} = 0)$';
-ax(1).YLabel.String = 'collapse timescale, $\tau(\Delta \dot{m})$';
+ax(3).YLabel.String = '$\tau_C(\Delta \dot{m})/ \tau_C(\Delta \dot{m} = 0)$';
+ax(1).YLabel.String = 'collapse timescale, $\tau_C(\Delta \dot{m}) \mathrm{(years)}$';
 ax(1).YLabel.Position(2) = 1400;
 %ax(2).YLabel.String = 'collapse timescale, $\tau(\Delta \dot{m})$';
 set(ax(3), 'YScale', 'log');
@@ -155,11 +148,11 @@ ax(3).YLim = [0.25,1];
 %% Panels (d)--(g) showing histograms of the collapse time as a function of scenario by 2100
 
 shelf_names = ["Ross"; "Ronne"; "Filchner"; "Amery"; "Larsen"];
-dM          = [0.0001, 0.256, 2.301, 3.611; 
-               0.0001, 0.223, 0.896, 2.213;
-               0.0001, 0.223, 0.896, 2.213;
-               0.0001, -0.278, 0.768,3.571;
-               0.0001, -0.037, 2.776, 4.312];
+dM          = [0.0001, 0.256, 2.301, 3.611;
+    0.0001, 0.223, 0.896, 2.213;
+    0.0001, 0.223, 0.896, 2.213;
+    0.0001, -0.278, 0.768,3.571;
+    0.0001, -0.037, 2.776, 4.312];
 
 ct_ssp = nan(5,4);
 % CData  = [70,150, 50; %green: SSP1-2.6
@@ -177,7 +170,7 @@ for i = 1:5
             ct_ssp(i,is) = load(fpath, 'collapse_time').collapse_time;
         end
 
-        
+
         b = bar(ax(i+3), 1:4,ct_ssp(i,:), 0.65);
         b.FaceColor = 'flat';
         b.CData = CData;
@@ -188,12 +181,13 @@ for i = 1:5
         ax(i+3).XTickLabel = {'Present day','SSP1-1.9', 'SSP2-4.5', 'SSP5-8.5'};
         ax(i+3).XTickLabelRotation = 45;
         ax(i+3).FontSize = 15;
-        
+        ax(i+3).YLabel.String = '$\tau_C \mathrm{(years)}$';
+        ax(i+3).YLabel.Interpreter = 'latex';
+
 
     end
 end
-
+ax(5).YLim = [0, 3500];
 shg
 
 
-   
