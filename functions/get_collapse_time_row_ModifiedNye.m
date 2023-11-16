@@ -38,7 +38,7 @@ for iy = 1:ny
 
         %iy
         if row_tags(iy) == 6 %have all data
-            collapse_time_row(iy) = get_collapse_time_advect_Nye(pp, dt, tmax);
+            collapse_time_row(iy) = get_collapse_time_advect_ModifiedNye(pp, dt, tmax);
         elseif row_tags(iy) == 4 %thickening - check if collapse at time zero
             TgfF = get_grounding_line_temp(pp.ghf, pp.Ts, pp.H0);
             anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution

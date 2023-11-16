@@ -155,6 +155,7 @@ shelf_colours  = fig2data.shelf_colours;
 crevasse_times = fig2data.crevasse_times;
 ave_ct         = fig2data.ave_crevasse_time;
 ave_ct_Nye     = fig2data.ave_crevasse_time_Nye;
+ave_ct_ModNye  = fig2data.ave_crevasse_time_ModNye;
 shelf_names    = fig2data.shelf_names_adj;
 
 % put back ground levels on
@@ -170,6 +171,7 @@ shelf_colours_sorted = shelf_colours(I,:);
 shelf_names_sorted = shelf_names(I);
 ave_ct_sorted = ave_ct(I); 
 ave_ct_Nye_sorted = ave_ct_Nye(I); 
+ave_ct_ModNye_sorted = ave_ct_ModNye(I); 
 crevasse_times_sorted = crevasse_times(I);
 
 w = 0.3; %width of the dist
@@ -204,6 +206,9 @@ for i = 1:length(melt_rate_sorted)
     % add the Nye result
     plot(cline,ave_ct_Nye_sorted(i),'ko','marker','o' ,'markerfacecolor',  1*[1,1,1], 'markersize', 6, 'LineWidth',1.1 )
 
+    % add the modified Nye result
+    plot(cline,ave_ct_ModNye_sorted(i),'ks','marker','s' ,'markerfacecolor',  1*[1,1,1], 'markersize', 6, 'LineWidth',1.1 )
+
     end
 end
 
@@ -226,7 +231,7 @@ ax3.YLabel.String = 'collapse timescale';
 figure(3); clf; hold on
 count = 1;
 levs  = logspace(0,4,length(cmap)); %these are the levels of the colourmap in log
-for i = 1:27 
+for i = 1:26
     subplot(3,9,count);
     
     diam =2*  sqrt(ave_ct_sorted(i));
@@ -238,8 +243,8 @@ for i = 1:27
     
     plot(0,0,'o', 'markerfacecolor', colpt, 'markersize', diam, 'MarkerEdgeColor', 'k', 'LineWidth',1)
     count = count + 1;
-    title(shelf_namesks(i))
+    title(shelf_names_sorted(i))
     ax = gca; ax.Visible = 'off';
     hold on
-    text(0,0, shelf_namesks(i))
+    text(0,0, shelf_names_sorted(i))
 end

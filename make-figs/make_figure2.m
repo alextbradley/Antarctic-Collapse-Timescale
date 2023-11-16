@@ -17,6 +17,7 @@ jdir = dir('../data/ice-shelves/major/*.mat'); %where shelf files are stored
 fig3data = load('figure3-data.mat');
 ct = fig3data.collapse_time; %collapse time data
 ct_Nye = fig3data.collapse_time_Nye;
+ct_ModNye = fig3data.collapse_time_ModNye;
 tags = fig3data.tags;
 
 %% Fetch the data
@@ -35,6 +36,7 @@ ave_strain_rate = nan(1,length(jdir));
 ave_thinning_rate = nan(1,length(jdir));
 ave_crevasse_time = nan(1,length(jdir));
 ave_crevasse_time_Nye = nan(1,length(jdir));
+ave_crevasse_time_ModNye = nan(1,length(jdir));
 
 std_melt_rate = nan(1,length(jdir));
 std_strain_rate = nan(1,length(jdir));
@@ -98,9 +100,20 @@ for i  = 1:length(jdir)
     ct_Nye_keep = ct_Nye_keep(~isinf(ct_Nye_keep));
     ct_Nye_keep  = ct_Nye_keep(ct_Nye_keep < 5e4);
 
+    %modified nye
+    ct_ModNye_shelf = ct_ModNye(g.IN);
+    ct_ModNye_keep = (ct_ModNye_shelf(~isnan(ct_ModNye_shelf))); %all non nan points in shelf
+    ct_ModNye_keep = ct_ModNye_keep(~isinf(ct_ModNye_keep));
+    ct_ModNye_keep  = ct_ModNye_keep(ct_ModNye_keep < 5e4);
+
     if ~isempty(ct_Nye_keep)
         pd = fitdist(ct_Nye_keep,'kernel');
         ave_crevasse_time_Nye(i) = mean(pd);
+    end
+
+    if ~isempty(ct_ModNye_keep)
+        pd = fitdist(ct_ModNye_keep,'kernel');
+        ave_crevasse_time_ModNye(i) = mean(pd);
     end
    
 
@@ -244,7 +257,7 @@ ax(2).YLabel.String = 'strain rate';
 
 %% Save data for use in figures 3 and 4
 if saveout
-    save('fig2_out_.mat', 'shelf_names_adj', 'shelf_colours','ave_melt_rate', 'ave_crevasse_time', "ave_crevasse_time_Nye", "crevasse_times")
+    save('fig2_out_.mat', 'shelf_names_adj', 'shelf_colours','ave_melt_rate', 'ave_crevasse_time', "ave_crevasse_time_Nye","ave_crevasse_time_ModNye", "crevasse_times")
 end
 
 
