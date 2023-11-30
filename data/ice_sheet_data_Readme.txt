@@ -26,7 +26,7 @@ dmdtadj: unit [m/yr] thinning rate 'dmdt' from Smith et al. 2020 including firn-
 dmdterr: unit [m/yr] RMSE dmdt error from Smith et al. 2020.
 
 MOA2009_1km: unit [NaN] satellite image
-bb0448974g_2_1.h5
+
 
 === * Calculation of Rxxs ========
 exx is strain rate from Furst

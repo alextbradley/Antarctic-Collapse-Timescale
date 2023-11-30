@@ -1,4 +1,4 @@
-function  collapse_time_row = get_collapse_time_row_Nye(row_H, row_dhdt, row_epsxx, row_mdot, row_tags, row_dt, row_tmax,...
+function  collapse_time_row = get_collapse_time_row_ModifiedNye(row_H, row_dhdt, row_epsxx, row_mdot, row_tags, row_dt, row_tmax,...
                                 Tb, Ts, B0, rhoi, g, kappa, n, frac_tough, ghf)
 ny = length(row_H);
 collapse_time_row = nan(1,ny);
@@ -38,11 +38,11 @@ for iy = 1:ny
 
         %iy
         if row_tags(iy) == 6 %have all data
-            collapse_time_row(iy) = get_collapse_time_advect_Nye(pp, dt, tmax);
+            collapse_time_row(iy) = get_collapse_time_advect_ModifiedNye(pp, dt, tmax);
         elseif row_tags(iy) == 4 %thickening - check if collapse at time zero
             TgfF = get_grounding_line_temp(pp.ghf, pp.Ts, pp.H0);
             anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution
-            dimless_crev_depth = get_dimless_crev_depth_Nye(pp, anonT); %time zero crevasse depth
+            dimless_crev_depth = get_dimless_crev_depth_ModifiedNye(pp, anonT); %time zero crevasse depth
             if dimless_crev_depth > 0.99
                 collapse_time_row(iy) = 0;
             else

@@ -33,13 +33,14 @@ Bs = f.B(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
 sz = size(hs);
 
 %% adhoc adjustments
-dhdts = -abs(dhdts);  
+%dhdts = -abs(dhdts);  
+dhdts(:) = g.mean_dhdt; 
 ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 
 %% determine tags
 % tags:
 %    1: outside domain (no thickness data)
-%    2: other missing data (no melt, strain rate, dhdt)
+%    2: any other missing data (no melt, strain rate, dhdt)
 %    3: negative strain rate
 %    4: positive thinning rate (currently stable)
 %    5: positive thinning rate (currently unstable)
@@ -49,7 +50,8 @@ tags = 6*ones(size(ms));
 
 tags(dhdts > 0) = 4;
 tags(strains < 0) = 3;
-tags(isnan(ms) | isnan(dhdts) | isnan(strains)) = 2;
+%tags(isnan(ms) | isnan(dhdts) | isnan(strains)) = 2;
+tags(isnan(ms) | isnan(strains)) = 2;
 tags(isnan(hs)) = 1;
 
 %% Constant quantities

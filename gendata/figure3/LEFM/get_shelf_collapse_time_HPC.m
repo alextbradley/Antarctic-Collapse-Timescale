@@ -1,4 +1,4 @@
-function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(shelf_name, step)
+function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time_HPC(shelf_name, step)
 %return the collapse time (as part of the larger array -- collapse time
 %square is the sub-array) for the shelf specified by shelf_name. Step is
 %the step in the grid resolution (integer, set to 1 for whole grid)
@@ -6,7 +6,7 @@ function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time(s
 % return the collapse time for the shelf inputted
 poolobj = gcp('nocreate');
 if ~isempty(poolobj);  delete(poolobj); end
-num_cpu=32;
+num_cpu=24;
 poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
@@ -33,7 +33,8 @@ Bs = f.B(xminidx:step:xmaxidx, yminidx:step:ymaxidx);
 sz = size(hs);
 
 %% adhoc adjustments
-dhdts = -abs(dhdts);  
+%dhdts = -abs(dhdts);  
+dhdts(:) = g.mean_dhdt;
 ms(ms < 1e-1) = 1e-1; %set a minimum melt value
 
 %% determine tags
@@ -49,9 +50,9 @@ tags = 6*ones(size(ms));
 
 tags(dhdts > 0) = 4;
 tags(strains < 0) = 3;
-tags(isnan(ms) | isnan(dhdts) | isnan(strains)) = 2;
+%tags(isnan(ms) | isnan(dhdts) | isnan(strains)) = 2;
+tags(isnan(ms) | isnan(strains)) = 2;
 tags(isnan(hs)) = 1;
-
 %% Constant quantities
 %constant parameters
 Tb    = -2 + 273.15;     %basal temperature (kelvin)
@@ -79,8 +80,8 @@ pp.ghf = ghf;
 
 collapse_time_square = nan(size(ms));
 %tic
-tmax = 1e4; %max time
-dt = 5; %timestep
+tmax = 5*1e4; %max time
+dt = 1; %timestep
 parfor ix =  1:sz(1)
 %for ix = 1:length(xs)
 

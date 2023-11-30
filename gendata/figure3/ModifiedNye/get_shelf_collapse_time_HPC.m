@@ -97,7 +97,7 @@ parfor ix =  1:sz(1)
     row_tmax = tmax*ones(size(row_mdot));   %max time                  %maximum time
     
     %get the collapse time on this row
-    collapse_time_row = get_collapse_time_row_Nye(row_H, row_dhdt, row_epsxx, row_mdot, row_tags,row_dt, row_tmax, ...
+    collapse_time_row = get_collapse_time_row_ModifiedNye(row_H, row_dhdt, row_epsxx, row_mdot, row_tags,row_dt, row_tmax, ...
                                                 Tb, Ts, B0, rhoi, g, kappa, n, frac_tough, ghf);
 
     collapse_time_square(ix,:) = collapse_time_row;

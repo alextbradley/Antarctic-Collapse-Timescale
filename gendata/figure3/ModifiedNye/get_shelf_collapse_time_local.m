@@ -1,13 +1,8 @@
-function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time_HPC(shelf_name, step)
+function [collapse_time, collapse_time_square, tags] = get_shelf_collapse_time_local(shelf_name, step)
 %return the collapse time (as part of the larger array -- collapse time
 %square is the sub-array) for the shelf specified by shelf_name. Step is
 %the step in the grid resolution (integer, set to 1 for whole grid)
 
-% return the collapse time for the shelf inputted
-poolobj = gcp('nocreate');
-if ~isempty(poolobj);  delete(poolobj); end
-num_cpu=32;
-poolobj = parpool('local',num_cpu);
 
 shelf_name = string(shelf_name);
 addpath('../../../functions')
@@ -82,8 +77,8 @@ collapse_time_square = nan(size(ms));
 %tic
 tmax = 5e4; %max time
 dt = 1; %timestep
-parfor ix =  1:sz(1)
-%for ix = 1:length(xs)
+%parfor ix =  1:sz(1)
+for ix = 1:sz(1)
 
     %variable parameters
     row_H = hs(ix,:);
@@ -97,7 +92,7 @@ parfor ix =  1:sz(1)
     row_tmax = tmax*ones(size(row_mdot));   %max time                  %maximum time
     
     %get the collapse time on this row
-    collapse_time_row = get_collapse_time_row_Nye(row_H, row_dhdt, row_epsxx, row_mdot, row_tags,row_dt, row_tmax, ...
+    collapse_time_row = get_collapse_time_row_ModifiedNye(row_H, row_dhdt, row_epsxx, row_mdot, row_tags,row_dt, row_tmax, ...
                                                 Tb, Ts, B0, rhoi, g, kappa, n, frac_tough, ghf);
 
     collapse_time_square(ix,:) = collapse_time_row;

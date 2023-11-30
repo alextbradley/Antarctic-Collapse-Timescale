@@ -6,7 +6,9 @@
 ##SBATCH --time=00:20:00         # adjust this to match the walltime of your job
 #SBATCH --nodes=1      
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=36     # adjust this if you are using parallel commands
+#SBATCH --cpus-per-task=32     # adjust this if you are using parallel commands
 
-matlab -nosplash -nodisplay -r run_get_shelf_collapse_time_HPC
-
+module load hpc/matlab
+FNAME="runsim_shelf_hpc($SHELFNO,$STEP)"
+echo $FNAME
+matlab -nosplash -nodisplay -r $FNAME

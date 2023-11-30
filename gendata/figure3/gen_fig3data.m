@@ -1,25 +1,29 @@
 % Generate data file for figure 3 of the ms, containing:
 % crevasse_time     : LEFM crevasse time
 % crevasse_time_Nye : Nye crevasse time
+% crevasse_time_ModNye : Modified Nye Crevasse time 
 % tags              : specifies type of data point.
 
-% assemble LEFM results
+%% LEFM 
 jdir = dir('./LEFM/step_1/*.mat');
 collapse_time = nan(4401,5301);
 for i = 1:length(jdir)
     data = load(strcat('./LEFM/step_1/', jdir(i).name)); %load data for this shelf
     
-    %fill in the matrix
-    idx = ~isnan(data.collapse_time);
+    % get the in points 
+    shelf_info = load(strcat('../../data/ice-shelves/all-shelves/', data.shelf_name, '.mat'));
+    
+    %fill in the matrix 
+    idx = ~isnan(data.collapse_time) & shelf_info.IN;
+
+
     collapse_time(idx) = data.collapse_time(idx);
 end
 
 save('figure3-data.mat', 'collapse_time');
-%%
 
-
-% 
-%% Repeat for Nye
+%
+%% Nye
 jdir = dir('./Nye/step_1/*.mat');
 collapse_time_Nye = nan(4401,5301);
 for i = 1:length(jdir)
@@ -31,6 +35,19 @@ for i = 1:length(jdir)
 end
 
 save('figure3-data.mat', 'collapse_time_Nye', '-append');
+
+%% Modified Nye
+jdir = dir('./ModifiedNye/step_1/*.mat');
+collapse_time_ModNye = nan(4401,5301);
+for i = 1:length(jdir)
+    data = load(strcat('./ModifiedNye/step_1/', jdir(i).name)); %load data for this shelf
+    
+    %fill in the matrix
+    idx = ~isnan(data.collapse_time);
+    collapse_time_ModNye(idx) = data.collapse_time(idx);
+end
+
+save('figure3-data.mat', 'collapse_time_ModNye', '-append');
 
 %%
 % figure(1); clf; p = imagesc(log10(collapse_time_Nye./collapse_time));
