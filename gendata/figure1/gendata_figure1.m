@@ -7,7 +7,7 @@ clear
 addpath('../../functions');
 data = load('../../data/ice_sheet_data.mat'); %load in the data (large!)
 
-savedat = 1; %flag to specify save (1) or not (0)
+savedat = 0; %flag to specify save (1) or not (0)
 
 %% Constant parameters throughout
 ghf = 48;

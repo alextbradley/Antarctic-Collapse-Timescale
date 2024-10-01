@@ -37,15 +37,26 @@ end
 save('figure3-data.mat', 'collapse_time_Nye', '-append');
 
 %% Modified Nye
-jdir = dir('./ModifiedNye/step_1/*.mat');
+jdir = dir('./ModifiedNye/step_4/*.mat');
 collapse_time_ModNye = nan(4401,5301);
 for i = 1:length(jdir)
-    data = load(strcat('./ModifiedNye/step_1/', jdir(i).name)); %load data for this shelf
+    data = load(strcat('./ModifiedNye/step_4/', jdir(i).name)); %load data for this shelf
     
     %fill in the matrix
     idx = ~isnan(data.collapse_time);
     collapse_time_ModNye(idx) = data.collapse_time(idx);
 end
+
+% add the 16km resolution data for Ronne and Ross
+jdir = dir('./ModifiedNye/step_16/*.mat');
+for i = 1:length(jdir)
+    data = load(strcat('./ModifiedNye/step_16/', jdir(i).name)); %load data for this shelf
+    
+    %fill in the matrix
+    idx = ~isnan(data.collapse_time);
+    collapse_time_ModNye(idx) = data.collapse_time(idx);
+end
+
 
 save('figure3-data.mat', 'collapse_time_ModNye', '-append');
 

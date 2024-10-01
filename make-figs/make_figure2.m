@@ -30,6 +30,8 @@ melt_rates  = cell(1,length(jdir));
 strain_rates  = cell(1,length(jdir));
 thinning_rates = cell(1,length(jdir));
 crevasse_times = cell(1,length(jdir));
+crevasse_times_Nye = cell(1,length(jdir));
+crevasse_times_ModNye = cell(1,length(jdir));
 
 ave_melt_rate = nan(1,length(jdir));
 ave_strain_rate = nan(1,length(jdir));
@@ -99,12 +101,15 @@ for i  = 1:length(jdir)
     ct_Nye_keep = (ct_Nye_shelf(~isnan(ct_Nye_shelf))); %all non nan points in shelf
     ct_Nye_keep = ct_Nye_keep(~isinf(ct_Nye_keep));
     ct_Nye_keep  = ct_Nye_keep(ct_Nye_keep < 5e4);
+    crevasse_times_Nye{i} = ct_Nye_keep;
 
     %modified nye
     ct_ModNye_shelf = ct_ModNye(g.IN);
     ct_ModNye_keep = (ct_ModNye_shelf(~isnan(ct_ModNye_shelf))); %all non nan points in shelf
     ct_ModNye_keep = ct_ModNye_keep(~isinf(ct_ModNye_keep));
     ct_ModNye_keep  = ct_ModNye_keep(ct_ModNye_keep < 5e4);
+    crevasse_times_ModNye{i} = ct_ModNye_keep;
+
 
     if ~isempty(ct_Nye_keep)
         pd = fitdist(ct_Nye_keep,'kernel');
@@ -211,8 +216,8 @@ plot(ax(1), m, 10^(p_thinning_rate_power(1))*m.^(p_thinning_rate_power(2)), 'k',
 % plot(ax(2), m, p_strain_rate(1) + m*(p_strain_rate(2)), 'k--', 'linewidth', 1.5 );
 % plot(ax(1), m, p_thinning_rate_power(1)+m* (p_thinning_rate_power(2)), 'k--', 'linewidth', 1.5 );
 
-plot(ax(2), m, 0.0033*m.^(0.4), 'r--')
-plot(ax(1), m, 0.66*m.^(0.4), 'r--')
+%plot(ax(2), m, 0.0033*m.^(0.4), 'r--')
+%plot(ax(1), m, 0.66*m.^(0.4), 'r--')
 
 shelf_colours = nan(length(ave_melt_rate), 3);
 for i = 1:length(jdir)
@@ -257,7 +262,7 @@ ax(2).YLabel.String = 'strain rate';
 
 %% Save data for use in figures 3 and 4
 if saveout
-    save('fig2_out_.mat', 'shelf_names_adj', 'shelf_colours','ave_melt_rate', 'ave_crevasse_time', "ave_crevasse_time_Nye","ave_crevasse_time_ModNye", "crevasse_times")
+    save('fig2_out_.mat', 'shelf_names_adj', 'shelf_colours','ave_melt_rate', 'ave_crevasse_time', "ave_crevasse_time_Nye","ave_crevasse_time_ModNye", "crevasse_times", "crevasse_times_Nye", "crevasse_times_ModNye")
 end
 
 

@@ -179,7 +179,7 @@ for i = 1:length(melt_rate_sorted)
 
     %get the data as array
     counts = cell2mat(crevasse_times_sorted(i));
-    counts(counts == 0) = 1; %make the plotting a bit nicer
+    counts(counts == 0) = 1; %make the plotting a bit nicer on w/ log scale
 
     %fit a kde to it
     if ~isempty(counts)
