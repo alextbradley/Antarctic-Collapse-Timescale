@@ -12,6 +12,7 @@ pp.lambda = 2*sign(pp.epsxx)*abs(pp.epsxx^(1/pp.n)) * pp.B0 / pp.rhoi / pp.g /  
 pp.F      = pp.frac_tough / (pp.H0)^(3/2) / pp.rhoi / pp.g;
 
 H_init = pp.H0; %store the initial thickness
+epsxx_init = pp.epsxx;
 
 TgfF = get_grounding_line_temp(pp.ghf, pp.Ts, pp.H0);
 anonT = @(z) TgfF(z) + (pp.Tb- TgfF(z)).*exp(-z/pp.l); %with advected grounding line contribution
@@ -32,7 +33,7 @@ while (i < nsteps) &&  (dimless_crev_depth < 1)
         tnow = tnow + dt;
            
     end
-    pp.epsxx = pp.epsxx * (pp.H0/H_init); 
+    pp.epsxx = epsxx_init * (pp.H0/H_init); 
 
     %compute dimensionless quantities
     pp.l      = pp.kappa/pp.H0/pp.mdot; %boundary layer lengthscale
